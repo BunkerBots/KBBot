@@ -8,8 +8,9 @@ module.exports.run = (client, message) => {
         .setColor('YELLOW')
         .setDescription(`${suggestion} \n\n - Suggested by <@${sid}>`)
     message.channel.send(eb).then(sentEmbed => {
-        sentEmbed.react("👍");
-        sentEmbed.react("👎");
+        sentEmbed.react("👍").then(() => {
+            sentEmbed.react("👎");
+        })
     });
     message.delete();
 }
