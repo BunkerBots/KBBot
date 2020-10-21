@@ -28,20 +28,31 @@ const advisors = [
 ];
 
 module.exports.run = (client, message) => {
-    if (message.content.startsWith(`${config.prefix}trade`)) {
-        trade(message);
-    } else if (message.content.startsWith(`${config.prefix}help`)) {
-        helpCmd(message);
-    } else if (message.content.startsWith(`${config.prefix}pins`)) {
-        pins(message);
-    } else if (message.content.startsWith(`${config.prefix}advisors`)) {
-        advisorsCmd(message);
-    } else if (message.content.startsWith(`${config.prefix}advise`)) {
-        advise(client, message);
-    } else if (message.content.startsWith(`${config.prefix}stonks`)) {
-        stonks(client, message);
-    } else if (message.content.startsWith(`${config.prefix}bid`)) {
-        bid(client, message);
+    if (message.content.startsWith(config.prefix)) {
+        let cmd = message.content.slice(config.prefix.length).split(" ").toLowerCase();
+        switch (cmd) {
+            case "trade":
+                trade(message);
+                break;
+            case "help":
+                helpCmd(message);
+                break;
+            case "pins":
+                pins(message);
+                break;
+            case "advisors":
+                advisorsCmd(message);
+                break;
+            case "advise":
+                advise(client, message);
+                break;
+            case "stonks":
+                stonks(client, message);
+                break;
+            case "bid":
+                bid(client, message);
+                break;
+        }
     }
 }
 
