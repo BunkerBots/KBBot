@@ -29,7 +29,7 @@ const advisors = [
 
 module.exports.run = (client, message) => {
     if (message.content.startsWith(config.prefix)) {
-        let cmd = message.content.slice(config.prefix.length).split(" ").toLowerCase();
+        let cmd = message.content.slice(config.prefix.length).split(" ")[0].toLowerCase();
         switch (cmd) {
             case "trade":
                 trade(message);
