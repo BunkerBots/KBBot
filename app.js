@@ -24,15 +24,13 @@ else env = 'PROD';
 //Loading commands from /commands directory, to client
 client.commands = new Discord.Collection();
 
-fs.readdir("./commands/", (err, files) => {
-    if (err) return console.error(err);
-    let jsfile = files.filter(f => f.split(".").pop() === "js");
-    if (jsfile.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
-    jsfile.forEach((f) => {
-        const pull = require(`./commands/${f}`)
-        client.commands.set(pull.config.name, pull);
-    });
-});
+const files = fs.readdirSync("./commands/");
+const jsFiles = files.filter(f => f.split(".").pop() === "js");
+if (jsFiles.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
+for (const f of jsFiles){
+    const pull = require(`./commands/${f}`)
+    client.commands.set(pull.config.name, pull);
+}
 
 //Login
 client.login(process.env.TOKEN);
