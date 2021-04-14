@@ -18,6 +18,7 @@ const requirements = {
     'community-mods': ['Mod Name:', 'Modifies:'],
     'skin-vote-submissions': ['Skin name:'],
     'bug-reports': ['Platform:', 'Operating System:', 'Report:', 'Reported by:', 'IGN:'],
+    'community-css': ['CSS:', 'Description:']
 }
 
 module.exports.run = async(client, message) => {
@@ -57,7 +58,22 @@ module.exports.run = async(client, message) => {
                     .setTimestamp();
             }
 
-        }else if (message.content.toUpperCase().includes('CLAN NAME')) {
+        } else if (message.content.toUpperCase().includes('CSS')) {
+            if (message.attachments.size == 0) denyReasons += '- ***Missing attachment*** \n';
+            if (message.attachments.size > 2) denyReasons += '- ***Too many attachments*** \n';
+            requirements["community-css"].forEach(requirement => {
+                if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
+            })
+            if (denyReasons == '') {
+                eb.setTitle('Community CSS submission request')
+                    .setColor('YELLOW')
+                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
+                    .setDescription(message.content)
+                    .setTimestamp();
+                eb.attachFiles(message.attachments.array())
+
+            }
+        } else if (message.content.toUpperCase().includes('CLAN NAME')) {
             requirements["clan-board"].forEach(requirement => {
                 if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
             });
