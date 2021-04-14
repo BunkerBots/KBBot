@@ -8,8 +8,8 @@ const config = require('./config.json'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
     db = {
-        submissions: submissions_db = new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
-        moderator: moderator_db = new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
+        submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
+        moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
     staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
     stickerRoles = staffRoles.concat([id.roles.socials, id.roles.devoted]),
@@ -28,7 +28,7 @@ fs.readdir("./commands/", (err, files) => {
     if (err) return console.error(err);
     let jsfile = files.filter(f => f.split(".").pop() === "js");
     if (jsfile.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
-    jsfile.forEach((f, i) => {
+    jsfile.forEach((f) => {
         const pull = require(`./commands/${f}`)
         client.commands.set(pull.config.name, pull);
     });
@@ -74,7 +74,7 @@ client.on('message', async(message) => {
                     .setFooter('Krunker Bunker Bot by JJ_G4M3R & Jytesh')
                     .setTimestamp());
             }
-
+            let canBypass = false;
             switch (message.channel.id) {
                 case id.channels["looking-for-game"]:
                     client.commands.get('lfg').run(client, message);
@@ -114,7 +114,6 @@ client.on('message', async(message) => {
                     break;
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
-                        var canBypass = false;
                         randomRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                         if (!canBypass) logger.messageDeleted(message, 'Random Chat Link', 'BLURPLE');
                     }
@@ -125,7 +124,6 @@ client.on('message', async(message) => {
             }
 
             if (message.guild.id == id.guilds.kb && message.content == '' && message.embeds.length == 0 && message.attachments.keyArray().length == 0) {
-                var canBypass = false;
                 stickerRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                 if (!canBypass) logger.messageDeleted(message, 'Sticker/Invite', 'BLURPLE');
             }
