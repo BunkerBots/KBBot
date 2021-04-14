@@ -24,6 +24,12 @@ else env = 'PROD';
 //Loading commands from /commands directory, to client
 client.commands = new Discord.Collection();
 
+module.exports = {
+    client: client,
+    db: db,
+    staffRoles: staffRoles,
+}
+
 const files = fs.readdirSync("./commands/");
 const jsFiles = files.filter(f => f.split(".").pop() === "js");
 if (jsFiles.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
@@ -135,9 +141,3 @@ client.on('messageReactionAdd', async(reaction, user) => {
         else if (reaction.message.channel.id == id.channels["submissions-review"]) client.commands.get('modmail').react(client, reaction, user);
     }
 });
-
-module.exports = {
-    client: client,
-    db: db,
-    staffRoles: staffRoles,
-}
