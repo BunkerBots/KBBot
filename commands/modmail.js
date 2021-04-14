@@ -317,6 +317,9 @@ async function approveRequest(client, reaction, user, member, embed) {
         case 'Skin vote submission request':
             sentMsg = await client.channels.resolve(id.channels["skin-vote-submissions"]).send(post);
             break;
+        case 'Community CSS submission request':
+            sentMsg = await client.channels.resolve(id.channels["community-css"]).send(post);
+            break;
             // case 'Bug reports submission request':
             //     break;
     }
