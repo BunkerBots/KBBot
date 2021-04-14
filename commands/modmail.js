@@ -156,7 +156,7 @@ module.exports.run = async(client, message) => {
         if (denyReasons == '') {
             const fetchData = await submissions_db.get(message.guild.id);
             approvalRequest(client, message, eb.setTitle(`${eb.title} #${fetchData.subID}`));
-            const updateData = await submissions_db.set(message.guild.id, { subID: fetchData.subID + 1 });
+            await submissions_db.set(message.guild.id, { subID: fetchData.subID + 1 });
             logger.messageDeleted(message, 'Modmail', 'NAVY');
         } else {
             autoDeny(message, denyReasons);
@@ -177,11 +177,12 @@ module.exports.react = async(client, reaction, user) => {
 
     switch (reaction.emoji.id) {
         case id.emojis.yes:
-            cembed = await approveRequest(client, reaction, user, member, embed);
+            await approveRequest(client, reaction, user, member, embed);
             break;
-        case id.emojis.no:
-            const reasonMessage = await reaction.message.channel.send(`<@${user.id}> Please provide a reason:`);
-            const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(e => {
+        case id.emojis.no: 
+        {
+                const reasonMessage = await reaction.message.channel.send(`<@${user.id}> Please provide a reason:`);
+                const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
                 reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                 reasonMessage.delete();
                 return;
@@ -190,6 +191,7 @@ module.exports.react = async(client, reaction, user) => {
             reasonMessage.delete();
             reasonMessages.first().delete();
             break;
+        }
         case id.emojis.formatting:
             embed = denyRequest(member, user, 'Incorrect formatting.', embed);
             break;
@@ -197,8 +199,9 @@ module.exports.react = async(client, reaction, user) => {
             embed = denyRequest(member, user, 'Missing information.', embed);
             break;
         case id.emojis.script:
+        {
             const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
-            const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(e => {
+            const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
                 reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                 editedMessage.delete();
                 return;
@@ -210,6 +213,7 @@ module.exports.react = async(client, reaction, user) => {
             editedMessage.delete();
             editedMessages.first().delete();
             break;
+        }
         default:
             reaction.messsage.edit(embed.setColor('YELLOW'));
             return;

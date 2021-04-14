@@ -1,7 +1,6 @@
 const id = require("../id.json"),
-    config = require('../config.json'),
-    { MessageEmbed } = require("discord.js");
-const logger = require("../logger");
+    config = require('../config.json');
+
 module.exports.run = async(client, message) => {
     const KU = await client.channels.fetch(id.channels.ku)
 
@@ -11,7 +10,7 @@ module.exports.run = async(client, message) => {
     await KU.send(message.content)
     let send = 0;
 
-    messages = await KU.awaitMessages((msg)=>{
+    const messages = await KU.awaitMessages((msg)=>{
         return msg.attachments.size > 0},{max:1,time:30000,errors:['time']})
         .catch(e=>{
             console.error('API MESSAGE NOT RECEIVED',e)

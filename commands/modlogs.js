@@ -1,4 +1,4 @@
-const id = require("../id.json"),
+const
     { MessageEmbed } = require("discord.js"),
     db = require('../app').db.moderator;
 

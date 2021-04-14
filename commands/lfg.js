@@ -88,6 +88,7 @@ function autodel(message) {
 }
 
 function getLinkInfo(link) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async(resolve, reject) => {
         link = link.split("=")[1]
         if (!link) {
@@ -121,6 +122,7 @@ function getLinkInfo(link) {
 }
 
 function getMapInfo(name) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async(resolve, reject) => {
         const options = {
             uri: `https://api.krunker.io/search?type=map&val=${name}`,
@@ -148,7 +150,7 @@ function getMapInfo(name) {
                 updatecounter: map.map_updatecounter,
                 featured: map.map_featured,
                 fund: map.fund,
-                thumbnail: map.map_info = { 't': 1 } ? `https://user-assets.krunker.io/m${map.map_id}/thumb.png` : null
+                thumbnail: map.map_info == { 't': 1 } ? `https://user-assets.krunker.io/m${map.map_id}/thumb.png` : null
             });
         } else {
             reject(new Error('404', json));

@@ -5,7 +5,7 @@ module.exports.run = async(client, message) => {
         message.suppressEmbeds();
 
         const prompt = await message.channel.send(`<@${message.author.id}> Enable notif ping?`);
-        const ping = await message.channel.awaitMessages(m => m.author.id == message.author.id, { max: 1, time: 60000, errors: ['time'] }).catch(e => {
+        const ping = await message.channel.awaitMessages(m => m.author.id == message.author.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
             message.channel.send(`<@${message.author.id}> Timeout. Reply faster next time you 4head.`).then(m => m.delete({ timeout: 7000 }));
             prompt.delete();
             return;

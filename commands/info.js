@@ -13,7 +13,7 @@ module.exports.run = (client, message) => {
         .setTimestamp()
         .setFooter('KrunkerLFG • Coming to get you');
 
-    time = client.uptime
+    const time = client.uptime
     if (time / 86400000 > 1) {
         eb.addField('Uptime', (time / 86400000).toFixed(2) + 'd', true)
     } else if (time / 3600000 > 1) {
