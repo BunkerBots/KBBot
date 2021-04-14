@@ -71,7 +71,7 @@ module.exports.run = async(client, message) => {
                     .setDescription(message.content)
                     .setTimestamp();
                 eb.attachFiles(message.attachments.array())
-
+                console.log(message.attachments.array());
             }
         } else if (message.content.toUpperCase().includes('CLAN NAME')) {
             requirements["clan-board"].forEach(requirement => {
