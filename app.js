@@ -61,6 +61,14 @@ client.on('ready', async() => {
                 else if (m.author.id != id.users.vortx && m.author.id != id.users.jj) client.commands.get('reporthackers').run(client, m);
             });
         });
+        const log = await client.channels.fetch(id.channels["log"]);
+        process.on('uncaughtException', (e) => {
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        })
+
+        process.on('unhandledRejection', (e) => {
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        })
     }
 });
 
