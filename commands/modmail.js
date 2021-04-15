@@ -39,7 +39,7 @@ module.exports.run = async(client, message) => {
                     .setTimestamp();
                 if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
             }
-        } else if (message.content.toUpperCase().startsWith('CLIP:')){
+        } else if (message.content.toUpperCase().startsWith('CLIP:')) {
             const videos = [
                 'https://www.youtube.com/watch?v=',
                 'https://youtu.be/',
@@ -143,7 +143,7 @@ module.exports.run = async(client, message) => {
                     .setDescription(message.content)
                     .setTimestamp();
                 if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
-                
+
             }
         } else if (message.content.toUpperCase().includes('REPORT')) {
             // if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
@@ -195,19 +195,20 @@ module.exports.react = async(client, reaction, user) => {
         case id.emojis.yes:
             await approveRequest(client, reaction, user, member, embed);
             break;
-        case id.emojis.no: 
-        {
+        case id.emojis.no:
+            {
                 const reasonMessage = await reaction.message.channel.send(`<@${user.id}> Please provide a reason:`);
                 const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
-                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
+                    reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
+                    reasonMessage.delete();
+                    reaction.message.edit(embed.setColor('YELLOW'));
+                    return;
+                });
+                embed = denyRequest(member, user, reasonMessages.first().content, embed);
                 reasonMessage.delete();
-                return;
-            });
-            embed = denyRequest(member, user, reasonMessages.first().content, embed);
-            reasonMessage.delete();
-            reasonMessages.first().delete();
-            break;
-        }
+                reasonMessages.first().delete();
+                break;
+            }
         case id.emojis.formatting:
             embed = denyRequest(member, user, 'Incorrect formatting.', embed);
             break;
@@ -215,21 +216,22 @@ module.exports.react = async(client, reaction, user) => {
             embed = denyRequest(member, user, 'Missing information.', embed);
             break;
         case id.emojis.script:
-        {
-            const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
-            const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
-                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
-                editedMessage.delete();
-                return;
-            });
-            embed.addField('Original', embed.description)
+            {
+                const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
+                const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
+                    reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
+                    editedMessage.delete();
+                    reaction.message.edit(embed.setColor('YELLOW'));
+                    return;
+                });
+                embed.addField('Original', embed.description)
                 .setDescription(editedMessages.first().content);
-            embed = await approveRequest(client, reaction, user, member, embed);
-            console.log(embed.title)
-            editedMessage.delete();
-            editedMessages.first().delete();
-            break;
-        }
+                embed = await approveRequest(client, reaction, user, member, embed);
+                console.log(embed.title)
+                editedMessage.delete();
+                editedMessages.first().delete();
+                break;
+            }
         default:
             reaction.messsage.edit(embed.setColor('YELLOW'));
             return;
@@ -293,6 +295,7 @@ async function approveRequest(client, reaction, user, member, embed) {
     if (reaction.message.attachments.size > 0) post.attachFiles(reaction.message.attachments.array());
     let title = embed.title.split(' ');
     title.pop();
+    const isSkinVote = false;
     switch (title.join(' ')) {
         case 'Suggestions submission request':
             sentMsg = await client.channels.resolve(id.channels["suggestions"]).send(post.setColor('YELLOW'));
@@ -316,6 +319,7 @@ async function approveRequest(client, reaction, user, member, embed) {
             break;
         case 'Skin vote submission request':
             sentMsg = await client.channels.resolve(id.channels["skin-vote-submissions"]).send(post);
+            isSkinVote = true;
             break;
         case 'Community CSS submission request':
             sentMsg = await client.channels.resolve(id.channels["community-css"]).send(post);
@@ -328,7 +332,7 @@ async function approveRequest(client, reaction, user, member, embed) {
             dm.send(new MessageEmbed()
                 .setColor('GREEN')
                 .setTitle('Submission Posted')
-                .setDescription(`Thank you for your submission. View your submission [here](${sentMsg.url}).`)
+                .setDescription(`Thank you for your submission. ${isSkinVote ? '' : `View your submission [here](${sentMsg.url}).`}`)
                 .setFooter('Submission approved by: ' + user.username, user.displayAvatarURL())
                 .setTimestamp());
         });
