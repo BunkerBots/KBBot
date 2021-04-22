@@ -12,8 +12,8 @@ const config = require('./config.json'),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
     staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-    stickerRoles = staffRoles.concat([id.roles.socials, id.roles.devoted]),
-    randomRoles = staffRoles.concat([id.roles.novice]);
+    stickerRoles = staffRoles.concat([id.roles.socials,id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]),
+    randomRoles = staffRoles.concat([id.roles.novice,id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
 (async function init() { Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); })();
 
@@ -23,7 +23,6 @@ else env = 'PROD';
 
 //Loading commands from /commands directory, to client
 client.commands = new Discord.Collection();
-
 module.exports = {
     client: client,
     db: db,
