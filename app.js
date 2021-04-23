@@ -13,8 +13,8 @@ const config = require('./config.json'),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
     staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-    stickerRoles = staffRoles.concat([id.roles.socials, id.roles.devoted]),
-    randomRoles = staffRoles.concat([id.roles.novice]);
+    stickerRoles = staffRoles.concat([id.roles.socials, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]),
+    randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
 (async function init() { Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); })();
 
@@ -24,7 +24,6 @@ else env = 'PROD';
 
 //Loading commands from /commands directory, to client
 client.commands = new Discord.Collection();
-
 module.exports = {
     client: client,
     db: db,
@@ -62,6 +61,14 @@ client.on('ready', async() => {
                 else if (m.author.id != id.users.vortx && m.author.id != id.users.jj) client.commands.get('reporthackers').run(client, m);
             });
         });
+        const log = await client.channels.fetch(id.channels["log"]);
+        process.on('uncaughtException', (e) => {
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        })
+
+        process.on('unhandledRejection', (e) => {
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        })
     }
 });
 
@@ -112,7 +119,9 @@ client.on('message', async(message) => {
                     break;
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
+                        console.log(canBypass);
                         randomRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+                        console.log(canBypass, message.member.roles.cache.keyArray())
                         if (!canBypass) logger.messageDeleted(message, 'Random Chat Link', 'BLURPLE');
                     }
                     break;
