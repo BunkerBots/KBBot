@@ -14,9 +14,6 @@ const config = require('../config.json'),
     ],
     advisors = [
         id.users.ks,
-        id.users.math,
-        id.users.qord,
-        id.users.jake,
     ];
 
 module.exports.run = (client, message) => {
