@@ -8,6 +8,7 @@ const config = require('./config.json'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
     db = {
+        chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
@@ -33,7 +34,7 @@ module.exports = {
 const files = fs.readdirSync("./commands/");
 const jsFiles = files.filter(f => f.split(".").pop() === "js");
 if (jsFiles.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
-for (const f of jsFiles){
+for (const f of jsFiles) {
     const pull = require(`./commands/${f}`)
     client.commands.set(pull.config.name, pull);
 }
@@ -69,15 +70,8 @@ client.on('message', async(message) => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
 
-            if (!message.guild) {
-                return message.reply(new Discord.MessageEmbed()
-                    .setTitle('‼ Heads Up ‼')
-                    .setColor('BLURPLE')
-                    .setDescription(`Please message <#${id.channels.submissions}> if you would like to submit a request for a suggestion, clan board, etc.`)
-                    .addField('Issues?', `If you are experiencing problems or issues with me, please contact JJ_G4M3R#2155 or Jytesh#3241`)
-                    .setFooter('Krunker Bunker Bot by JJ_G4M3R & Jytesh')
-                    .setTimestamp());
-            }
+            if (!message.guild) return;
+
             let canBypass = false;
             switch (message.channel.id) {
                 case id.channels["looking-for-game"]:
