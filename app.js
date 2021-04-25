@@ -63,16 +63,24 @@ client.on('ready', async() => {
         });
         const log = await client.channels.fetch(id.channels["log"]);
         process.on('uncaughtException', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all' })
         })
 
         process.on('unhandledRejection', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all' })
         })
     }
 });
 
 client.on('message', async(message) => {
+    if (env != 'PROD' && !message.author.bot && message.channel.id == id.channels['call-channel']) client.commands.get('chatreport').run(client, message);
+
+    if (message.content.startsWith(`${config.prefix}rule`)) {
+        let isStaff = false;
+        staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
+        if (isStaff) client.commands.get('rules').run(client, message);
+    }
+
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
@@ -130,7 +138,14 @@ client.on('message', async(message) => {
                     break;
             }
 
+            if (message.content.startsWith(`${config.prefix}rule`)) {
+                let isStaff = false;
+                staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return; });
+                if (isStaff) client.commands.get('rules').run(client, message);
+            }
+
             if (message.guild.id == id.guilds.kb && message.content == '' && message.embeds.length == 0 && message.attachments.keyArray().length == 0) {
+                canBypass = false;
                 stickerRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                 if (!canBypass) logger.messageDeleted(message, 'Sticker/Invite', 'BLURPLE');
             }
