@@ -75,12 +75,6 @@ client.on('ready', async() => {
 client.on('message', async(message) => {
     if (env != 'PROD' && !message.author.bot && message.channel.id == id.channels['call-channel']) client.commands.get('chatreport').run(client, message);
 
-    if (message.content.startsWith(`${config.prefix}rule`)) {
-        let isStaff = false;
-        staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
-        if (isStaff) client.commands.get('rules').run(client, message);
-    }
-
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
