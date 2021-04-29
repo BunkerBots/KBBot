@@ -134,7 +134,7 @@ client.on('message', async(message) => {
 
             if (message.content.startsWith(`${config.prefix}rule`)) {
                 let isStaff = false;
-                staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return; });
+                staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
                 if (isStaff) client.commands.get('rules').run(client, message);
             }
 
