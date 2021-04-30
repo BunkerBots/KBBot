@@ -81,11 +81,11 @@ client.on('ready', async() => {
             log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
         });
 
-        const twitchStream = twit.stream('statuses/filter', { follow: ['1125044302055448577', '1119940815533424640']});
-        const channel = await client.channels.fetch(id.channels["bunker-bot-commands"]);
-        twitchStream.on('tweet', (tweet) => {
+        const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577']});
+        const twitterChannel = await client.channels.fetch(id.channels["krunker-feed"]);
+        twitterStream.on('tweet', (tweet) => {
             const url = "https://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id_str;
-            channel.send(url).catch(console.log);
+            twitterChannel.send(url).catch(console.log);
         })
     }
 });
