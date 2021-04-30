@@ -81,11 +81,12 @@ client.on('ready', async() => {
             log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
         });
 
-        const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577', '1119940815533424640']});
+        const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577']});
         const twitterChannel = await client.channels.fetch(id.channels["krunker-feed"]);
         console.log(twitterStream);
         twitterStream.on('tweet', (tweet) => {
             console.info('TWITTER: ', tweet)
+            if (tweet.user.screen_name != 'krunkerio') return;
             const url = "https://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id_str;
             twitterChannel.send(url).catch(console.log);
         })
