@@ -8,6 +8,7 @@ const config = require('./config.json'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
     db = {
+        chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
@@ -43,7 +44,7 @@ module.exports = {
 const files = fs.readdirSync("./commands/");
 const jsFiles = files.filter(f => f.split(".").pop() === "js");
 if (jsFiles.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
-for (const f of jsFiles){
+for (const f of jsFiles) {
     const pull = require(`./commands/${f}`)
     client.commands.set(pull.config.name, pull);
 }
@@ -90,19 +91,14 @@ client.on('ready', async() => {
 });
 
 client.on('message', async(message) => {
+    if (env != 'PROD' && !message.author.bot && message.channel.id == id.channels['call-channel']) client.commands.get('chatreport').run(client, message);
+
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
 
-            if (!message.guild) {
-                return message.reply(new Discord.MessageEmbed()
-                    .setTitle('‼ Heads Up ‼')
-                    .setColor('BLURPLE')
-                    .setDescription(`Please message <#${id.channels.submissions}> if you would like to submit a request for a suggestion, clan board, etc.`)
-                    .addField('Issues?', `If you are experiencing problems or issues with me, please contact JJ_G4M3R#2155 or Jytesh#3241`)
-                    .setFooter('Krunker Bunker Bot by JJ_G4M3R & Jytesh')
-                    .setTimestamp());
-            }
+            if (!message.guild) return;
+
             let canBypass = false;
             switch (message.channel.id) {
                 case id.channels["looking-for-game"]:
@@ -154,7 +150,14 @@ client.on('message', async(message) => {
                     break;
             }
 
+            if (message.content.startsWith(`${config.prefix}rule`)) {
+                let isStaff = false;
+                staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
+                if (isStaff) client.commands.get('rules').run(client, message);
+            }
+
             if (message.guild.id == id.guilds.kb && message.content == '' && message.embeds.length == 0 && message.attachments.keyArray().length == 0) {
+                canBypass = false;
                 stickerRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                 if (!canBypass) logger.messageDeleted(message, 'Sticker/Invite', 'BLURPLE');
             }
