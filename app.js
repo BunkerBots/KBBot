@@ -11,9 +11,20 @@ const config = require('./config.json'),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
+    Twit = require('twit'),
     staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
     stickerRoles = staffRoles.concat([id.roles.socials, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]),
     randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
+
+const twit = new Twit({
+    consumer_key:         process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret:      process.env.TWITTER_CONSUMER_SECRET,
+    access_token:         process.env.TWITTER_ACCESS_TOKEN,
+    access_token_secret:  process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    timeout_ms:           60*1000, // optional HTTP request timeout to apply to all requests.
+    strictSSL:            true, // optional - requires SSL certificates to be valid.
+     
+});
 
 (async function init() { Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); })();
 
@@ -63,10 +74,17 @@ client.on('ready', async() => {
         const log = await client.channels.fetch(id.channels["log"]);
         process.on('uncaughtException', (e) => {
             log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
-        })
+        });
 
         process.on('unhandledRejection', (e) => {
             log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        });
+
+        const twitchStream = twit.stream('statuses/filter', { follow: ['1125044302055448577', '1119940815533424640']});
+        const channel = await client.channels.fetch(id.channels["bunker-bot-commands"]);
+        twitchStream.on('tweet', (tweet) => {
+            const url = "https://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id_str;
+            channel.send(url).catch(console.log);
         })
     }
 });
