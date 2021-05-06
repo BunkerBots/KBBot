@@ -281,9 +281,11 @@ async function approvalRequest(client, message, embed) {
     client.channels.resolve(id.channels["submissions-review"]).send(embed).then(m => {
         m.react(client.emojis.cache.get(id.emojis.yes));
         m.react(client.emojis.cache.get(id.emojis.no));
+        m.react(client.emojis.cache.get(id.emojis.script));
         m.react(client.emojis.cache.get(id.emojis.formatting));
         m.react(client.emojis.cache.get(id.emojis.missing));
-        m.react(client.emojis.cache.get(id.emojis.script));
+        m.react(client.emojis.cache.get(id.emojis.calendar));
+        m.react(client.emojis.cache.get(id.emojis.discordTag));
     });
 }
 
