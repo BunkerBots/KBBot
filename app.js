@@ -96,6 +96,10 @@ client.on('ready', async() => {
 client.on('message', async(message) => {
     if (env != 'PROD' && !message.author.bot && message.channel.id == id.channels['call-channel']) client.commands.get('chatreport').run(client, message);
 
+    // Crosspost change logs
+    if (env == 'PROD' && message.channel.id == id.channels['change-logs']) {
+        await message.crosspost().catch(console.error);
+    }
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
