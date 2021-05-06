@@ -12,9 +12,20 @@ const config = require('./config.json'),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
+    Twit = require('twit'),
     staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
     stickerRoles = staffRoles.concat([id.roles.socials, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]),
     randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
+
+const twit = new Twit({
+    consumer_key:         process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret:      process.env.TWITTER_CONSUMER_SECRET,
+    access_token:         process.env.TWITTER_ACCESS_TOKEN,
+    access_token_secret:  process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    timeout_ms:           60*1000, // optional HTTP request timeout to apply to all requests.
+    strictSSL:            true, // optional - requires SSL certificates to be valid.
+     
+});
 
 (async function init() { Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); })();
 
@@ -63,11 +74,21 @@ client.on('ready', async() => {
         });
         const log = await client.channels.fetch(id.channels["log"]);
         process.on('uncaughtException', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all' })
-        })
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        });
 
         process.on('unhandledRejection', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all' })
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+        });
+
+        const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577']});
+        const twitterChannel = await client.channels.fetch(id.channels["krunker-feed"]);
+        twitterStream.on('tweet', (tweet) => {
+            console.info('TWITTER: ', tweet)
+            if (tweet.user.screen_name != 'krunkerio') return;
+            if (tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
+            const url = "https://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id_str;
+            twitterChannel.send(url).catch(console.log);
         })
     }
 });
@@ -75,6 +96,10 @@ client.on('ready', async() => {
 client.on('message', async(message) => {
     if (env != 'PROD' && !message.author.bot && message.channel.id == id.channels['call-channel']) client.commands.get('chatreport').run(client, message);
 
+    // Crosspost change logs
+    if (env == 'PROD' && message.channel.id == id.channels['change-logs']) {
+        await message.crosspost().catch(console.error);
+    }
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
