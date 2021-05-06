@@ -1,25 +1,19 @@
-const id = require("../id.json"),
-    { MessageEmbed, MessageAttachment } = require("discord.js"),
+const id = require('../id.json'),
+    { MessageEmbed, MessageAttachment } = require('discord.js'),
     submissions_db = require('../app').db.submissions,
     moderator_db = require('../app').db.moderator,
-    logger = require("../logger");
+    logger = require('../logger');
 
-const roles = [
-    '692870902005629041', //Trial Mod
-    '448207247215165451', //Mod
-    '448195089471111179', //CM
-    '638129127555072028', //Yendis
-    '448198031041495040', //Dev
-];
-const requirements = {
-    'clan-board': ['Clan Name:', 'Clan Level:', 'Clan Info:', 'discord.gg/'],
-    'customizations': ['Type:', 'Name:'],
-    'community-maps': ['Map Name:', 'Map Link:', 'Description:'],
-    'community-mods': ['Mod Name:', 'Modifies:'],
-    'skin-vote-submissions': ['Skin name:'],
-    'bug-reports': ['Platform:', 'Operating System:', 'Report:', 'Reported by:', 'IGN:'],
-    'community-css': ['CSS:', 'Description:']
-}
+const roles = require('../app').staffRoles,
+    requirements = {
+        'clan-board': ['Clan Name:', 'Clan Level:', 'Clan Info:', 'discord.gg/'],
+        'customizations': ['Type:', 'Name:'],
+        'community-maps': ['Map Name:', 'Map Link:', 'Description:'],
+        'community-mods': ['Mod Name:', 'Modifies:'],
+        'skin-vote-submissions': ['Skin name:'],
+        'bug-reports': ['Platform:', 'Operating System:', 'Report:', 'Reported by:', 'IGN:'],
+        'community-css': ['CSS:', 'Description:'],
+    };
 
 module.exports.run = async(client, message) => {
     var canBypass = false;
@@ -182,6 +176,7 @@ module.exports.run = async(client, message) => {
         }
     }
 }
+
 module.exports.react = async(client, reaction, user) => {
     await reaction.fetch();
     await reaction.message.fetch();
@@ -209,12 +204,7 @@ module.exports.react = async(client, reaction, user) => {
                 reasonMessages.first().delete();
                 break;
             }
-        case id.emojis.formatting:
-            embed = denyRequest(member, user, 'Incorrect formatting.', embed);
-            break;
-        case id.emojis.missing:
-            embed = denyRequest(member, user, 'Missing information.', embed);
-            break;
+
         case id.emojis.script:
             {
                 const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
@@ -232,12 +222,25 @@ module.exports.react = async(client, reaction, user) => {
                 editedMessages.first().delete();
                 break;
             }
+        case id.emojis.formatting:
+            embed = denyRequest(member, user, 'Incorrect formatting.', embed);
+            break;
+        case id.emojis.missing:
+            embed = denyRequest(member, user, 'Missing information.', embed);
+            break;
+        case id.emojis.calendar:
+            embed = denyRequest(member, user, 'Please wait a week between submitting clan board requests.', embed);
+            break;
+        case id.emojis.discordTag:
+            embed = denyRequest(member, user, 'This suggestion has already been made in this past.', embed);
+            break;
         default:
             reaction.messsage.edit(embed.setColor('YELLOW'));
             return;
     }
 
     reaction.message.edit(embed);
+    if (embed.hexColor == id.colours.YELLOW) reaction.message.edit(embed.setColor('YELLOW'));
 
     //DB stuff
     const fetchUser = await moderator_db.get(user.id);
