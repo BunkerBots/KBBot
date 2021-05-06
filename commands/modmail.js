@@ -276,6 +276,9 @@ async function approvalRequest(client, message, embed) {
     ).then(m => { m.delete({ timeout: 30000 }) });
     message.author.createDM().then(dm => dm.send(new MessageEmbed()
         .setTitle(`Submission ID: #${embed.title.split('#')[1]}`)
+        .setDescription('Summary of your submission can be found below:')
+        .addField('**Type**', `${embed.title.substring(0, embed.title.indexOf('#'))}`)
+        .addField('**Content:**', `${embed.description}`)
         .setColor('YELLOW')
         .setTimestamp()).catch(logger.error));
     client.channels.resolve(id.channels["submissions-review"]).send(embed).then(m => {
@@ -358,7 +361,7 @@ async function approveRequest(client, reaction, user, member, embed) {
 function denyRequest(member, user, reason, embed) {
     member.createDM().then(dm => {
         dm.send(new MessageEmbed()
-            .setTitle('Submission request denied')
+            .setTitle(`Submission request ID: #${embed.title.split('#')[1]} denied`)
             .setColor('ORANGE')
             .setDescription('Your submission request has been denied. For help, please check out the guide [here](https://discord.com/channels/448194623580667916/779620494328070144/782082253345390592). If you think this is a mistake, please contact ' + user.tag)
             .addField('Reason:', reason)
