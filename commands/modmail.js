@@ -295,7 +295,7 @@ async function approveRequest(client, reaction, user, member, embed) {
     if (reaction.message.attachments.size > 0) post.attachFiles(reaction.message.attachments.array());
     let title = embed.title.split(' ');
     title.pop();
-    const isSkinVote = false;
+    let isSkinVote = false;
     switch (title.join(' ')) {
         case 'Suggestions submission request':
             sentMsg = await client.channels.resolve(id.channels["suggestions"]).send(post.setColor('YELLOW'));
