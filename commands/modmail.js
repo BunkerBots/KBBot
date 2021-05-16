@@ -303,7 +303,6 @@ async function approveRequest(client, reaction, user, member, embed) {
     if (reaction.message.attachments.size > 0) post.attachFiles(reaction.message.attachments.array());
     let title = embed.title.split(' ');
     title.pop();
-    const isSkinVote = false;
     switch (title.join(' ')) {
         case 'Suggestions submission request':
             sentMsg = await client.channels.resolve(id.channels["suggestions"]).send(post.setColor('YELLOW'));
@@ -326,8 +325,9 @@ async function approveRequest(client, reaction, user, member, embed) {
             sentMsg = await client.channels.resolve(id.channels["community-mods"]).send(post);
             break;
         case 'Skin vote submission request':
-            sentMsg = await client.channels.resolve(id.channels["skin-vote-submissions"]).send(post);
-            isSkinVote = true;
+            sentMsg = await client.channels.resolve(id.channels["skin-showcase"]).send(post);
+            sentMsg.react(client.emojis.cache.get(id.emojis.yes));
+            sentMsg.react(client.emojis.cache.get(id.emojis.no));
             break;
         case 'Community CSS submission request':
             sentMsg = await client.channels.resolve(id.channels["community-css"]).send(post);
@@ -340,7 +340,7 @@ async function approveRequest(client, reaction, user, member, embed) {
             dm.send(new MessageEmbed()
                 .setColor('GREEN')
                 .setTitle('Submission Posted')
-                .setDescription(`Thank you for your submission. ${isSkinVote ? '' : `View your submission [here](${sentMsg.url}).`}`)
+                .setDescription(`Thank you for your submission. View your submission [here](${sentMsg.url}).`)
                 .setFooter('Submission approved by: ' + user.username, user.displayAvatarURL())
                 .setTimestamp());
         });
