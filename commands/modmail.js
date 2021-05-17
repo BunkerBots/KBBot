@@ -326,6 +326,8 @@ async function approveRequest(client, reaction, user, member, embed) {
             break;
         case 'Skin vote submission request':
             sentMsg = await client.channels.resolve(id.channels["skin-showcase"]).send(post);
+            sentMsg.react(client.emojis.cache.get(id.emojis.yes));
+            sentMsg.react(client.emojis.cache.get(id.emojis.no));
             break;
         case 'Community CSS submission request':
             sentMsg = await client.channels.resolve(id.channels["community-css"]).send(post);
@@ -338,7 +340,7 @@ async function approveRequest(client, reaction, user, member, embed) {
             dm.send(new MessageEmbed()
                 .setColor('GREEN')
                 .setTitle('Submission Posted')
-                .setDescription(`Thank you for your submission. ${`View your submission [here](${sentMsg.url}).`}`)
+                .setDescription(`Thank you for your submission. View your submission [here](${sentMsg.url}).`)
                 .setFooter('Submission approved by: ' + user.username, user.displayAvatarURL())
                 .setTimestamp());
         });
