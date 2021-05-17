@@ -11,9 +11,7 @@ const config = require('../config.json'),
         id.users.mooon,
         id.users.uchi,
     ],
-    advisors = [
-        id.users.ks,
-    ];
+    advisors = [id.users.ks];
 
 module.exports.run = (client, message) => {
     if (message.content.toLowerCase().startsWith(`${config.prefix}trade`)) {

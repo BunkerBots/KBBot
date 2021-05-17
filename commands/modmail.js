@@ -4,7 +4,7 @@ const id = require('../id.json'),
     moderator_db = require('../app').db.moderator,
     logger = require('../logger');
 
-const roles = require('../app').staffRoles,
+const roles = [id.roles.dev, id.roles.yendis, id.roles.cm],
     requirements = {
         'clan-board': ['Clan Name:', 'Clan Level:', 'Clan Info:', 'discord.gg/'],
         'customizations': ['Type:', 'Name:'],
@@ -13,10 +13,12 @@ const roles = require('../app').staffRoles,
         'skin-showcase': ['Skin name:'],
         'bug-reports': ['Platform:', 'Operating System:', 'Report:', 'Reported by:', 'IGN:'],
         'community-css': ['CSS:', 'Description:'],
-    };
+    },
+    allowNicknameBypass = [id.users.jytesh, id.users.jj];
 
 module.exports.run = async(client, message) => {
     var canBypass = false;
+    if (allowNicknameBypass.includes(message.author.id) && message.member.nickname?.includes('bypass')) canBypass = true;
     if (!canBypass) roles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
     if (!canBypass) {
         let denyReasons = '';

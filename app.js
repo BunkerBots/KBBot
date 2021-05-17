@@ -13,7 +13,7 @@ const config = require('./config.json'),
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
     Twit = require('twit'),
-    staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod],
+    staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
     stickerRoles = staffRoles.concat([id.roles.socials, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]),
     randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
