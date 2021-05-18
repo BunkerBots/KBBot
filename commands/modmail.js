@@ -18,7 +18,7 @@ const roles = [id.roles.dev, id.roles.yendis, id.roles.cm],
 
 module.exports.run = async(client, message) => {
     var canBypass = false;
-    if (allowNicknameBypass.includes(message.author.id) && message.member.nickname?.includes('bypass')) canBypass = true;
+    if (allowNicknameBypass.includes(message.author.id) && message.member.nickname.includes('bypass')) canBypass = true;
     if (!canBypass) roles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
     if (!canBypass) {
         let denyReasons = '';
