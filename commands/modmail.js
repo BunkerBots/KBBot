@@ -234,7 +234,7 @@ module.exports.react = async(client, reaction, user) => {
             embed = denyRequest(member, user, 'Please wait a week between submitting clan board requests.', embed);
             break;
         case id.emojis.discordTag:
-            embed = denyRequest(member, user, 'This suggestion has already been made in this past.', embed);
+            embed = denyRequest(member, user, 'This suggestion has already been made in the past.', embed);
             break;
         default:
             reaction.messsage.edit(embed.setColor('YELLOW'));
