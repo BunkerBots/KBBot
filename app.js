@@ -8,7 +8,7 @@ const config = require('./config.json'),
     fs = require('fs'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
-    disbut = require('discord-buttons'),
+    disbut = require('discord-buttons')(client),
     db = {
         chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
