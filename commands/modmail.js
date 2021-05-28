@@ -18,7 +18,7 @@ const roles = [id.roles.dev, id.roles.yendis, id.roles.cm],
 
 module.exports.run = async(client, message) => {
     var canBypass = false;
-    if (allowNicknameBypass.includes(message.author.id) && message.member.nickname?.includes('bypass')) canBypass = true;
+    if (allowNicknameBypass.includes(message.author.id) && message.member.nickname.includes('bypass')) canBypass = true;
     if (!canBypass) roles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
     if (!canBypass) {
         let denyReasons = '';
@@ -234,7 +234,7 @@ module.exports.react = async(client, reaction, user) => {
             embed = denyRequest(member, user, 'Please wait a week between submitting clan board requests.', embed);
             break;
         case id.emojis.discordTag:
-            embed = denyRequest(member, user, 'This suggestion has already been made in this past.', embed);
+            embed = denyRequest(member, user, 'This suggestion has already been made in the past.', embed);
             break;
         default:
             reaction.messsage.edit(embed.setColor('YELLOW'));
