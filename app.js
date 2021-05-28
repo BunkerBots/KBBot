@@ -2,11 +2,13 @@
 require('dotenv').config();
 const config = require('./config.json'),
     id = require('./id.json'),
+    { inspect } = require('util'),
     Discord = require('discord.js'),
     client = new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] }),
     fs = require('fs'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
+    disbut = require('discord-buttons'),
     db = {
         chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
@@ -129,6 +131,11 @@ client.on('message', async(message) => {
                         case `${config.prefix}socials`:
                             if (message.member.roles.cache.has(id.roles.socials) || message.author.id == id.users.jj) cmdToRun = 'socials';
                             break;
+                        case `${config.prefix}execute`:
+                            if (message.author.id == id.users.jytesh && message.channel.id == id.channels['bunker-bot-commands']) {
+                                evald(message);
+                            }
+                            break;
                     }
                     if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
                     break;
@@ -178,3 +185,27 @@ client.on('messageReactionAdd', async(reaction, user) => {
         else if (reaction.message.channel.id == id.channels["submissions-review"]) client.commands.get('modmail').react(client, reaction, user);
     }
 });
+
+async function evald(message) {
+    try {
+        let script = message.content.replace(`${config.prefix}execute `, '');
+        if (script.includes('await'))
+            script = `(async() => {${script}})()`;
+        console.log(script);
+        // eslint-disable-next-line no-eval
+        let evaled = await eval(script);
+        if (typeof evaled !== 'string')
+            evaled = inspect(evaled);
+        console.log(clean(evaled));
+        message.channel.send(clean(evaled), { code: 'xl' });
+    } catch (e) {
+        message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(inspect(e))}\n\`\`\``);
+    }
+}
+
+function clean (text) {
+    if (typeof text === 'string')
+        return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203)).substring(0, 1800);
+    else
+        return text;
+}
