@@ -8,7 +8,7 @@ const config = require('./config.json'),
     fs = require('fs'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
-    disbut = require('discord-buttons')(client),
+    //disbut = require('discord-buttons')(client),
     db = {
         chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
         submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
@@ -16,7 +16,6 @@ const config = require('./config.json'),
     },
     Twit = require('twit'),
     staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-    stickerRoles = staffRoles.concat([id.roles.socials, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]),
     randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
 const twit = new Twit({
@@ -96,19 +95,14 @@ client.on('ready', async() => {
 });
 
 client.on('message', async(message) => {
-    if (env != 'PROD' && !message.author.bot && message.channel.id == id.channels['call-channel']) client.commands.get('chatreport').run(client, message);
-
     // Crosspost change logs
-    if (env == 'PROD' && message.channel.id == id.channels['change-logs']) {
-        await message.crosspost().catch(console.error);
-    }
+    if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
+
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
-            if (message.author.bot) return; // This will prevent bots from using the bot. Lovely!
+            if (message.author.bot || !message.guild) return;
 
-            if (!message.guild) return;
-
-            let canBypass = false;
+            // Public commands
             switch (message.channel.id) {
                 case id.channels["looking-for-game"]:
                     client.commands.get('lfg').run(client, message);
@@ -132,9 +126,7 @@ client.on('message', async(message) => {
                             if (message.member.roles.cache.has(id.roles.socials) || message.author.id == id.users.jj) cmdToRun = 'socials';
                             break;
                         case `${config.prefix}execute`:
-                            if (message.author.id == id.users.jytesh && message.channel.id == id.channels['bunker-bot-commands']) {
-                                evald(message);
-                            }
+                            if (message.author.id == id.users.jytesh && message.channel.id == id.channels['bunker-bot-commands'])  evald(message);
                             break;
                     }
                     if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
@@ -153,6 +145,7 @@ client.on('message', async(message) => {
                     break;
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
+                        var canBypass = false;
                         console.log(canBypass);
                         randomRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                         console.log(canBypass, message.member.roles.cache.keyArray())
@@ -164,16 +157,24 @@ client.on('message', async(message) => {
                     break;
             }
 
-            if (message.content.startsWith(`${config.prefix}rule`)) {
+            // Staff commands
+            if(message.content.startsWith(`${config.prefix}staff`)) {
                 let isStaff = false;
                 staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
-                if (isStaff) client.commands.get('rules').run(client, message);
-            }
-
-            if (message.guild.id == id.guilds.kb && message.content == '' && message.embeds.length == 0 && message.attachments.keyArray().length == 0) {
-                canBypass = false;
-                stickerRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
-                if (!canBypass) logger.messageDeleted(message, 'Sticker/Invite', 'BLURPLE');
+                if (isStaff) {
+                    message.content = message.content.substring(message.content.indexOf(' ') + 1);
+                    switch(message.content.split(' ')[0]) {
+                        case 'rule':
+                            client.commands.get('rules').run(client, message);
+                            break;
+                        case 'emails':
+                            client.commands.get('emails').run(client, message);
+                            break;
+                        case 'roles':
+                            client.commands.get('roles').run(client, message);
+                            break;
+                    }
+                }
             }
         }
     }, 250);
