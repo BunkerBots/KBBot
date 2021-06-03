@@ -273,7 +273,7 @@ async function approvalRequest(client, message, embed) {
     message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
         .setTitle('Submission sent for review')
         .setColor('GREEN')
-        .setDescription('To receive updates about your submission, please ensure that you do not have me blocked. Check your DMs with me for you submission ID.')
+        .setDescription('To receive updates about your submission, please ensure that you do not have me blocked. Check your DMs with me for your submission ID.')
         .setTimestamp()
     ).then(m => { m.delete({ timeout: 30000 }) });
     message.author.createDM().then(dm => dm.send(new MessageEmbed()
