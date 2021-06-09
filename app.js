@@ -146,11 +146,13 @@ client.on('message', async(message) => {
                         case `${config.prefix}socials`:
                             if (message.member.roles.cache.has(id.roles.socials) || message.author.id == id.users.jj) cmdToRun = 'socials';
                             break;
-                        case `${config.prefix}execute`:
-                            if ((message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) {
-                                evald(message);
-                            }
-                            break;
+
+                        // 
+                        // case `${config.prefix}execute`:
+                        //     if ((message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) {
+                        //         evald(message);
+                        //     }
+                        //     break;
                     }
                     if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
                     break;
@@ -208,6 +210,7 @@ client.on('messageReactionAdd', async(reaction, user) => {
     }
 });
 
+// eslint-disable-next-line no-unused-vars
 async function evald(message) {
     try {
         let script = message.content.replace(`${config.prefix}execute `, '');
