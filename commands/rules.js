@@ -1,6 +1,4 @@
-const config = require('../config.json'),
-    id = require('../id.json'),
-    { MessageEmbed } = require("discord.js");
+const { MessageEmbed } = require("discord.js");
 
 const rules = [
     ['', ''],
@@ -18,14 +16,14 @@ const rules = [
 
 module.exports.run = (client, message) => {
     const args = message.content.split(' '),
-        rNum = args[0].replace(`${config.prefix}rule`, ''),
-        mention = args.length > 1 && args[1].match(/<?@?!?(\d{17,19})>?/) ? args[1].replace('<@', '').replace('!', '').replace('>', '') : null;
-    if (rNum < 1 || rNum > 10) return client.channels.resolve(id.channels['bunker-bot-commands']).send(`<@${message.author.id}> That rule doesn't exist mate.`);
+        rNum = args[1],
+        mention = args.length > 2 && args[2].match(/<?@?!?(\d{17,19})>?/) ? args[2].replace('<@', '').replace('!', '').replace('>', '') : null;
+    if (!(rNum > 0 && rNum < 11)) return;
 
     message.channel.send(mention != null ? `<@${mention}>,` : '', {
         embed: new MessageEmbed()
-            .setColor('#ffd1dc')
             .setTitle(`__**Rule ${rNum}**__ - **${rules[rNum][0]}**`)
+            .setColor('#ffd1dc')
             .setDescription(`${rules[rNum][1]}`)
             .setTimestamp()
     });
