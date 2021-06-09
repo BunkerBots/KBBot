@@ -109,7 +109,6 @@ module.exports = {
         "no-confusing-arrow": "error",
         "no-console": "off",
         "no-constructor-return": "off",
-        "no-continue": "error",
         "no-div-regex": "error",
         "no-duplicate-imports": "error",
         "no-else-return": "off",

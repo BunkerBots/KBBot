@@ -8,6 +8,9 @@ const config = require('./config.json'),
     fs = require('fs'),
     logger = require('./logger'),
     Mongo = require('./mongo.js'),
+    // eslint-disable-next-line no-unused-vars
+    { MessageButton } = require('discord-buttons'), 
+    // eslint-disable-next-line no-unused-vars
     disbut = require('discord-buttons')(client),
     db = {
         chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
@@ -58,11 +61,29 @@ client.login(process.env.TOKEN);
 client.on('ready', async() => {
     console.log('[Krunker Bunker Bot] ready to roll!');
 
+    client.buttons = loadButtons();
+    client.on('clickButton', async btn => {
+        const identifier = btn.id.split('_')[0];
+        const buttonCmd = client.buttons.get(identifier);
+        if (buttonCmd) {
+            await buttonCmd(client, btn);
+            if (!(btn.deferred === true || btn.replied === true)) return btn.reply.send('oops, dm a dev lol')
+        } else return btn.reply.send('oops, dm a dev lol')
+    });
+
     if (env == 'PROD') {
         client.user.setActivity('#submissions', { type: "WATCHING" });
+       
 
-        client.channels.resolve(id.channels["bunker-bot-commands"]).send(config.version);
+        const bunkerBotCommands = client.channels.resolve(id.channels["bunker-bot-commands"])
+        bunkerBotCommands.send(config.version);
 
+        client.on('log', (...args) => {
+            bunkerBotCommands.send(args.map(x => {
+                if (typeof x == 'string') return x;
+                else return require('util').inspect(x);
+            }).join('\n\n'))
+        });
         client.channels.resolve(id.channels["looking-for-game"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
             messages.array().forEach(m => {
                 logger.messageDeleted(m, 'Bot reboot autodel', 'AQUA')
@@ -132,7 +153,7 @@ client.on('message', async(message) => {
                             if (message.member.roles.cache.has(id.roles.socials) || message.author.id == id.users.jj) cmdToRun = 'socials';
                             break;
                         case `${config.prefix}execute`:
-                            if (message.author.id == id.users.jytesh && message.channel.id == id.channels['bunker-bot-commands']) {
+                            if ((message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) {
                                 evald(message);
                             }
                             break;
@@ -153,9 +174,7 @@ client.on('message', async(message) => {
                     break;
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
-                        console.log(canBypass);
                         randomRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
-                        console.log(canBypass, message.member.roles.cache.keyArray())
                         if (!canBypass) logger.messageDeleted(message, 'Random Chat Link', 'BLURPLE');
                     }
                     break;
@@ -208,4 +227,17 @@ function clean (text) {
         return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203)).substring(0, 1800);
     else
         return text;
+}
+
+/**
+ * @returns {Collection} Collection with buttons
+ */
+function loadButtons() {
+    const buttons = new Discord.Collection();
+    const dir = fs.readdirSync('./buttons').filter(x => x.includes('.js'));
+    for (const file of dir) {
+        const buttonsFile = require(`./buttons/${file}`);
+        buttons.set(file.split('.')[0], buttonsFile);
+    }
+    return buttons
 }
