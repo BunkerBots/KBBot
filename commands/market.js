@@ -5,11 +5,7 @@ const config = require('../config.json'),
     // Access IDs
     roles = require('../app').staffRoles,
     users = [
-        id.users.math,
-        id.users.redeagle,
         id.users.jj,
-        id.users.mooon,
-        id.users.uchi,
     ],
     advisors = [id.users.ks];
 
