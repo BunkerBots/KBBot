@@ -118,7 +118,11 @@ client.on('ready', async() => {
 client.on('message', async(message) => {
     // Crosspost change logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
-
+    if (env !== 'PROD') {
+        if (message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) {
+           evald(message);
+        }
+    }
     client.setTimeout(async() => {
         if (!message.deleted && env == 'PROD') {
             if (message.author.bot || !message.guild) return;
