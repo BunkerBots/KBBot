@@ -1,8 +1,11 @@
 require('dotenv').config();
 const env = (!process.argv[2] || process.argv[2] == 'test') ? 'DEV' : 'PROD';
 
-// Load dependencies
-const   config =            require('./config.json'),
+// Load Dependencies
+const   Discord =   require('discord.js'),
+        client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] }),
+
+        config =            require('./config.json'),
         fs =                require('fs'),
         id =                require('./id.json'),
         { inspect } =       require('util'),
@@ -11,9 +14,6 @@ const   config =            require('./config.json'),
         disbut =            require('discord-buttons')(client),
         // eslint-disable-next-line no-unused-vars
         { MessageButton } = require('discord-buttons'),
-
-        Discord =   require('discord.js'),
-        client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] }),
 
         Mongo = require('./mongo.js'),
         db = {
@@ -34,7 +34,8 @@ const   config =            require('./config.json'),
         staffRoles =    [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
         randomRoles =   staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
-(async function init() { Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); })();
+
+Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); 
 
 module.exports = {
     client: client,
@@ -42,97 +43,96 @@ module.exports = {
     staffRoles: staffRoles,
 }
 
-//Loading commands from /commands directory, to client
+// Load in commands
 client.commands = new Discord.Collection();
-const files = fs.readdirSync("./commands/");
-const jsFiles = files.filter(f => f.split(".").pop() === "js");
-if (jsFiles.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
-for (const f of jsFiles) {
-    const pull = require(`./commands/${f}`)
+const cmdFiles  = fs.readdirSync('./commands/').filter(f => f.includes('.js'));
+if (cmdFiles.length < 1) return console.log('[KB Bot] There aren\'t any commands'); // JJ has fucked up
+else for (const cmdFile of cmdFiles) {
+    const pull = require(`./commands/${cmdFile}`)
     client.commands.set(pull.config.name, pull);
 }
 
-//Login
+// Load in buttons
+client.buttons = new Discord.Collection();
+const btnFiles = fs.readdirSync('./buttons').filter(f => f.includes('.js'));
+if (btnFiles.length < 1) return console.log('[KB Bot] There aren\'t any buttons');
+else for (const btnFile of btnFiles) {
+    const pull = require(`./buttons/${btnFile}`);
+    client.buttons.set(btnFile.split('.')[0], pull);
+}
+
+// Login
 client.login(process.env.TOKEN);
 
-//Event Handlers
+// Event Handlers
 client.on('ready', async() => {
     console.log('[Krunker Bunker Bot] ready to roll!');
 
-    client.buttons = loadButtons();
-    client.on('clickButton', async btn => {
-        const identifier = btn.id.split('_')[0];
-        const buttonCmd = client.buttons.get(identifier);
-        if (buttonCmd) {
-            await buttonCmd(client, btn);
-            if (!(btn.deferred === true || btn.replied === true)) return btn.reply.send('oops, dm a dev lol')
-        } else return btn.reply.send('oops, dm a dev lol')
-    });
-
+    // Host Only Start-up
     if (env == 'PROD') {
         client.user.setActivity('#submissions', { type: "WATCHING" });
        
-
-        const bunkerBotCommands = client.channels.resolve(id.channels["bunker-bot-commands"])
+        const bunkerBotCommands = client.channels.resolve(id.channels["bunker-bot-commands"]);
         bunkerBotCommands.send(config.version);
 
+        // No clue what this is
         client.on('log', (...args) => {
             bunkerBotCommands.send(args.map(x => {
                 if (typeof x == 'string') return x;
                 else return require('util').inspect(x);
-            }).join('\n\n'))
+            }).join('\n\n'));
         });
+
+        // Deal with channels on start-up
         client.channels.resolve(id.channels["looking-for-game"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
-            messages.array().forEach(m => {
-                logger.messageDeleted(m, 'Bot reboot autodel', 'AQUA')
+            messages.array().forEach(message => {
+                logger.messageDeleted(message, 'Bot reboot autodel', 'AQUA');
             });
         });
         client.channels.resolve(id.channels["report-hackers"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
-            messages.array().forEach(m => {
-                if (m.author.id == id.users.kbbot) m.delete({ timeout: 20000 });
-                else if (m.author.id != id.users.vortx && m.author.id != id.users.jj) client.commands.get('reporthackers').run(client, m);
+            messages.array().forEach(message => {
+                if (message.author.id == id.users.kbbot) message.delete({ timeout: 20000 });
+                else if (message.author.id != id.users.kb) client.commands.get('reporthackers').run(client, message);
             });
         });
+        
+        // Unhandled Error Logging
         const log = await client.channels.fetch(id.channels["log"]);
         process.on('uncaughtException', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'});
         });
-
         process.on('unhandledRejection', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'})
+            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'});
         });
 
-        const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577']});
-        const twitterChannel = await client.channels.fetch(id.channels["krunker-feed"]);
+        // Twitter
+        const   twitterStream =     twit.stream('statuses/filter', { follow: ['1125044302055448577']}),
+                krunkerFeed =    await client.channels.fetch(id.channels["krunker-feed"]);
         twitterStream.on('tweet', (tweet) => {
-            console.info('TWITTER: ', tweet)
-            if (tweet.user.screen_name != 'krunkerio') return;
-            if (tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
-            const url = "https://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id_str;
-            twitterChannel.send(url).catch(console.log);
-        })
+            console.info('TWITTER: ', tweet);
+            if (tweet.user.screen_name != 'krunkerio' || tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
+            krunkerFeed.send(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`).catch(console.log);
+        });
     }
 });
 
 client.on('message', async(message) => {
-    // Crosspost change logs
+    // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
-    if (env !== 'PROD') {
-        if (message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) {
-           evald(message);
-        }
-    }
-    client.setTimeout(async() => {
-        if (!message.deleted && env == 'PROD') {
-            if (message.author.bot || !message.guild) return;
+    if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
 
-            // Public commands
+    client.setTimeout(async() => {
+        if (env == 'PROD' && !message.deleted) {
+            if (message.author.bot || !message.guild) return; // Ignore bots and DMs
+
+            var cmdToRun = '';
+            
+            // Public Commands
             switch (message.channel.id) {
                 case id.channels["looking-for-game"]:
-                    client.commands.get('lfg').run(client, message);
+                    cmdToRun = 'lfg';
                     break;
                 case id.channels["bunker-bot-commands"] || id.channels["dev"]:
-                    var cmdToRun = '';
                     switch (message.content.split(' ')[0]) {
                         case `${config.prefix}info`:
                             cmdToRun = 'info';
@@ -147,29 +147,24 @@ client.on('message', async(message) => {
                             cmdToRun = 'player';
                             break;
                         case `${config.prefix}socials`:
-                            if (message.member.roles.cache.has(id.roles.socials) || message.author.id == id.users.jj) cmdToRun = 'socials';
+                            if (message.member.roles.cache.has(id.roles.socials)) cmdToRun = 'socials';
                             break;
-
-                        // 
-                        // case `${config.prefix}execute`:
-                        //     if ((message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) {
-                        //         evald(message);
-                        //     }
-                        //     break;
                     }
-                    if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
                     break;
                 case id.channels["trading-board"]:
-                    client.commands.get('trading').run(client, message);
+                    cmdToRun = 'trading';
                     break;
                 case id.channels["market-chat"]:
-                    client.commands.get('market').run(client, message);
+                    cmdToRun = 'market';
                     break;
                 case id.channels["krunker-art"]:
-                    client.commands.get('art').run(client, message);
+                    cmdToRun = 'art';
                     break;
                 case id.channels["report-hackers"]:
-                    client.commands.get('reporthackers').run(client, message);
+                    cmdToRun = 'reporthackers';
+                    break;
+                case id.channels["submissions"]:
+                    cmdToRun = 'modmail';
                     break;
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
@@ -178,12 +173,9 @@ client.on('message', async(message) => {
                         if (!canBypass) logger.messageDeleted(message, 'Random Chat Link', 'BLURPLE');
                     }
                     break;
-                case id.channels["submissions"]:
-                    client.commands.get('modmail').run(client, message);
-                    break;
             }
 
-            // Staff commands
+            // Staff Commands
             if(message.content.startsWith(`${config.prefix}staff`)) {
                 let isStaff = false;
                 staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
@@ -191,39 +183,51 @@ client.on('message', async(message) => {
                     message.content = message.content.substring(message.content.indexOf(' ') + 1);
                     switch(message.content.split(' ')[0]) {
                         case 'rule':
-                            client.commands.get('rules').run(client, message);
+                            cmdToRun = 'rules';
                             break;
                         case 'emails':
-                            client.commands.get('emails').run(client, message);
+                            cmdToRun = 'emails';
                             break;
                         case 'roles':
-                            client.commands.get('roles').run(client, message);
+                            cmdToRun = 'roles';
                             break;
                     }
                 }
             }
+
+            // Run Command
+            if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
         }
     }, 250);
 });
 
 client.on('messageReactionAdd', async(reaction, user) => {
-    if (env == 'PROD') {
+    if (user.bot) return; // Ignore bot reactions
+    else if (reaction.message.channel.id == id.channels['bunker-bot-commands']) client.commands.get('modmail').react(client, reaction, user);
+
+    if (env == 'PROD' && reaction.message.channel.id == id.channels["submissions-review"]) {
         if (user.bot) return; // Ignore bot reactions
-        else if (reaction.message.channel.id == id.channels["submissions-review"]) client.commands.get('modmail').react(client, reaction, user);
+        else client.commands.get('modmail').react(client, reaction, user);
     }
 });
 
-// eslint-disable-next-line no-unused-vars
+client.on('clickButton', async btn => {
+    const buttonCmd = client.buttons.get(btn.id.split('_')[0]);
+    if (buttonCmd) {
+        await buttonCmd(client, btn);
+        if (!(btn.deferred === true || btn.replied === true)) return btn.reply.send('Error. Please contact a bot dev.');
+    } else return btn.reply.send('Error. Please contact a bot dev.');
+});
+
+// Weird stuff
 async function evald(message) {
     try {
         let script = message.content.replace(`${config.prefix}execute `, '');
-        if (script.includes('await'))
-            script = `(async() => {${script}})()`;
+        if (script.includes('await')) script = `(async() => {${script}})()`;
         console.log(script);
         // eslint-disable-next-line no-eval
         let evaled = await eval(script);
-        if (typeof evaled !== 'string')
-            evaled = inspect(evaled);
+        if (typeof evaled !== 'string') evaled = inspect(evaled);
         console.log(clean(evaled));
         message.channel.send(clean(evaled), { code: 'xl' });
     } catch (e) {
@@ -232,21 +236,6 @@ async function evald(message) {
 }
 
 function clean (text) {
-    if (typeof text === 'string')
-        return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203)).substring(0, 1800);
-    else
-        return text;
-}
-
-/**
- * @returns {Collection} Collection with buttons
- */
-function loadButtons() {
-    const buttons = new Discord.Collection();
-    const dir = fs.readdirSync('./buttons').filter(x => x.includes('.js'));
-    for (const file of dir) {
-        const buttonsFile = require(`./buttons/${file}`);
-        buttons.set(file.split('.')[0], buttonsFile);
-    }
-    return buttons
+    if (typeof text === 'string') return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203)).substring(0, 1800);
+    else return text;
 }

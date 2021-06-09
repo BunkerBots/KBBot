@@ -1,181 +1,120 @@
-const id = require('../id.json'),
-    { MessageEmbed, MessageAttachment } = require('discord.js'),
-    submissions_db = require('../app').db.submissions,
-    moderator_db = require('../app').db.moderator,
-    logger = require('../logger');
+const { MessageEmbed, MessageAttachment } = require('discord.js'),
 
-const roles = [id.roles.dev, id.roles.yendis, id.roles.cm],
+    id =        require('../id.json'),
+    logger =    require('../logger'),
+
+    moderator_db =      require('../app').db.moderator,
+    submissions_db =    require('../app').db.submissions,
+    
+    roles =         [id.roles.dev, id.roles.yendis, id.roles.cm],
+    bypassList =    [id.users.jytesh, id.users.jj],
+
     requirements = {
-        'clan-board': ['Clan Name:', 'Clan Level:', 'Clan Info:', 'discord.gg/'],
-        'customizations': ['Type:', 'Name:'],
-        'community-maps': ['Map Name:', 'Map Link:', 'Description:'],
-        'community-mods': ['Mod Name:', 'Modifies:'],
-        'skin-showcase': ['Skin name:'],
-        'bug-reports': ['Platform:', 'Operating System:', 'Report:', 'Reported by:', 'IGN:'],
-        'community-css': ['CSS:', 'Description:'],
+        'clan-board':       ['Clan Name:', 'Clan Level:', 'Clan Info:', 'discord.gg/'],
+        'customizations':   ['Type:', 'Name:'],
+        'community-css':    ['CSS:', 'Description:'],
+        'community-maps':   ['Map Name:', 'Map Link:', 'Description:'],
+        'community-mods':   ['Mod Name:', 'Modifies:'],
+        'skin-showcase':    ['Skin Name:'],
     },
-    allowNicknameBypass = [id.users.jytesh, id.users.jj];
+    videos = [
+        'https://www.youtube.com/watch?v=',
+        'https://youtu.be/',
+        'https://streamable.com/',
+        'https://medal.tv/',
+        'https://clips.twitch.tv/',
+        'https://www.twitch.tv/',
+    ];
 
 module.exports.run = async(client, message) => {
-    var canBypass = false;
-    if (allowNicknameBypass.includes(message.author.id) && message.member.nickname.includes('bypass')) canBypass = true;
-    if (!canBypass) roles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
-    if (!canBypass) {
-        let denyReasons = '';
-        let eb = new MessageEmbed();
+    if (bypassList.includes(message.author.id) && message.member.nickname.includes('bypass')) return;
+    else roles.forEach(role => { if (message.member.roles.cache.has(role)) return; });
 
-        if (message.content.toUpperCase().startsWith('SUGGEST')) {
-            if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
+    var denyReasons = '';
+    var embed = new MessageEmbed()
+        .setColor('YELLOW')
+        .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
+        .setTimestamp();
 
-            if (denyReasons == '') {
-                eb.setTitle('Suggestions submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content.substring(message.content.indexOf(' ') + 1))
-                    .setTimestamp();
-                if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
-            }
-        } else if (message.content.toUpperCase().startsWith('CLIP:')) {
-            const videos = [
-                'https://www.youtube.com/watch?v=',
-                'https://youtu.be/',
-                'https://streamable.com/',
-                'https://medal.tv/',
-                'https://clips.twitch.tv/',
-                'https://www.twitch.tv/',
-            ];
-            if (videos.every(domain => !message.content.includes(domain))) denyReasons += `► submissions must include a **YouTube** video, a **Streamable** video, a **Medal** video, or a **Twitch** clip`;
-            if (message.attachments.size) denyReasons += '- ***Too many attachments*** \n';
-            if (denyReasons == '') {
-                eb.setTitle('Clips of the week submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content.substring('clip:'.length).trim().split(" ").join(" "))
-                    .setTimestamp();
-            }
-
-        } else if (message.content.toUpperCase().includes('CSS')) {
-            if (message.attachments.size == 0) denyReasons += '- ***Missing attachment*** \n';
-            if (message.attachments.size > 2) denyReasons += '- ***Too many attachments*** \n';
-            requirements["community-css"].forEach(requirement => {
-                if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
-            })
-            if (denyReasons == '') {
-                eb.setTitle('Community CSS submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content)
-                    .setTimestamp();
-                eb.attachFiles(message.attachments.array())
-                console.log(message.attachments.array());
-            }
-        } else if (message.content.toUpperCase().includes('CLAN NAME')) {
-            requirements["clan-board"].forEach(requirement => {
-                if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
-            });
-
-            if (!message.content.startsWith('```')) message.content = '```' + message.content;
-            if (!message.content.endsWith('```')) message.content += '\n```';
-
-            if (denyReasons == '') {
-                eb.setTitle('Clan boards submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content)
-                    .setTimestamp();
-            }
-        } else if (message.content.toUpperCase().includes('TYPE')) {
-            if (message.attachments.size == 0) denyReasons += '- ***Missing attachment*** \n';
-            else if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
-            requirements["customizations"].forEach(requirement => {
-                if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
-            });
-
-            if (denyReasons == '') {
-
-                eb.setTitle('Customizations submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content)
-                    .setImage(message.attachments.array()[0].url)
-                    .setTimestamp();
-            }
-        } else if (message.content.toUpperCase().includes('MAP NAME')) {
-            if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
-            requirements["community-maps"].forEach(requirement => {
-                if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
-            });
-
-            if (denyReasons == '') {
-                eb.setTitle('Community maps submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content)
-                    .setTimestamp();
-                if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
-            }
-        } else if (message.content.toUpperCase().includes('MOD NAME')) {
-            if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
-            requirements["community-mods"].forEach(requirement => {
-                if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
-            });
-
-            if (denyReasons == '') {
-                eb.setTitle('Community mods submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content)
-                    .setTimestamp();
-                if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
-            }
-        } else if (message.content.toUpperCase().includes('SKIN NAME')) {
-            if (message.attachments.size == 0) denyReasons += '- ***Missing attachment*** \n';
-            if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
-
-            if (denyReasons == '') {
-                eb.setTitle('Skin vote submission request')
-                    .setColor('YELLOW')
-                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                    .setDescription(message.content)
-                    .setTimestamp();
-                if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
-
-            }
-        } else if (message.content.toUpperCase().includes('REPORT')) {
-            // if (message.attachments.size > 1) denyReasons += '- ***Too many attachments*** \n';
-            // requirements["bug-reports"].forEach(requirement => {
-            //     if (!message.content.toUpperCase().split(" ").join("").includes(requirement.toUpperCase().split(" ").join(""))) denyReasons += `- Missing field: ***${requirement}*** \n`;
-            // });
-
-            // if (denyReasons == '') {
-            //     eb.setTitle('Bug reports submission request')
-            //         .setColor('YELLOW')
-            //         .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-            //         .setDescription(message.content)
-            //         .setTimestamp();
-            //     if (message.attachments.size != 0) eb.setImage(message.attachments.array()[0].url);
-            // }
-        } else {
-            message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
-                .setTitle('INVALID INPUT')
-                .setColor('RED')
-                .setDescription('Invalid input. Please read the pinned message on how to use this channel.')
-            ).then(m => { m.delete({ timeout: 30000 }) });
-            logger.messageDeleted(message, 'Modmail', 'NAVY');
-            return;
+    if (message.content.toUpperCase().startsWith('SUGGEST')) {
+        if (message.attachments.size > 1) denyReasons = '► **Too many attachments**';
+        else {
+            embed.setTitle('Suggestions submission request')
+                .setDescription(message.content.substring(message.content.indexOf(' ') + 1));
+            if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
         }
+    } else if (message.content.toUpperCase().startsWith('CLIP')) {
+        if (videos.every(domain => !message.content.includes(domain))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
+        else embed.setTitle('Clips of the week submission request')
+            .setDescription(message.content.substring('Clip:'.length).trim().split(" ").join(" "));
+    } else if (message.content.toUpperCase().includes('CSS')) {
+        if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
+        else if (message.attachments.size > 2) denyReasons = '► **Too many attachments** \n';
+        denyReasons += missingRequirements('community-css', message.content);
+        
+        if (denyReasons == '') embed.setTitle('Community CSS submission request')
+            .setDescription(message.content)
+            .attachFiles(message.attachments.array());
+    } else if (message.content.toUpperCase().includes('CLAN NAME')) {
+        denyReasons += missingRequirements('clan-board', message.content);
 
         if (denyReasons == '') {
-            const fetchData = await submissions_db.get(message.guild.id);
-            approvalRequest(client, message, eb.setTitle(`${eb.title} #${fetchData.subID}`));
-            await submissions_db.set(message.guild.id, { subID: fetchData.subID + 1 });
-            logger.messageDeleted(message, 'Modmail', 'NAVY');
-        } else {
-            autoDeny(message, denyReasons);
-            client.setTimeout(() => {
-                logger.messageDeleted(message, 'Modmail', 'NAVY');
-            }, 10000);
+            if (!message.content.startsWith('```')) message.content = '```' + message.content;
+            if (!message.content.endsWith('```')) message.content += '\n```';
+            embed.setTitle('Clan boards submission request')
+                .setDescription(message.content);
         }
+    } else if (message.content.toUpperCase().includes('TYPE')) {
+        if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
+        else if (message.attachments.size > 1) denyReasons = '► **Too many attachments** \n';
+        denyReasons += missingRequirements('customizations', message.content);
+
+        if (denyReasons == '') embed.setTitle('Customizations submission request')
+            .setDescription(message.content)
+            .setImage(message.attachments.array()[0].url);
+    } else if (message.content.toUpperCase().includes('MAP NAME')) {
+        if (message.attachments.size > 1) denyReasons = '► **Too many attachments** \n';
+        denyReasons += missingRequirements('community-maps', message.content);
+
+        if (denyReasons == '') {
+            embed.setTitle('Community maps submission request')
+                .setDescription(message.content);
+            if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
+        }
+    } else if (message.content.toUpperCase().includes('MOD NAME')) {
+        if (message.attachments.size > 1) denyReasons = '► **Too many attachments** \n';
+        denyReasons += missingRequirements('community-mods', message.content);
+
+        if (denyReasons == '') {
+            embed.setTitle('Community mods submission request')
+                .setDescription(message.content);
+            if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
+        }
+    } else if (message.content.toUpperCase().includes('SKIN NAME')) {
+        if (message.attachments.size == 0) denyReasons = '► **Missing attachment**';
+        else if (message.attachments.size > 1) denyReasons = '► **Too many attachments**';
+        else embed.setTitle('Skin vote submission request')
+            .setDescription(message.content)
+            .setImage(message.attachments.array()[0].url);
+    } else {
+        message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
+            .setTitle('INVALID INPUT')
+            .setColor('RED')
+            .setDescription('Invalid input. Please read the pinned message on how to use this channel.')
+        ).then(m => { m.delete({ timeout: 30000 }) });
+        return logger.messageDeleted(message, 'Modmail', 'NAVY');
+    }
+
+    if (denyReasons == '') {
+        const fetchData = await submissions_db.get(message.guild.id);
+        approvalRequest(client, message, embed.setTitle(`${embed.title} #${fetchData.subID}`));
+        await submissions_db.set(message.guild.id, { subID: fetchData.subID + 1 });
+        logger.messageDeleted(message, 'Modmail', 'NAVY');
+    } else {
+        autoDeny(message, denyReasons);
+        client.setTimeout(() => {
+            logger.messageDeleted(message, 'Modmail', 'NAVY');
+        }, 10000);
     }
 }
 
@@ -258,6 +197,11 @@ module.exports.react = async(client, reaction, user) => {
     }
 }
 
+module.exports.config = {
+    name: 'modmail',
+}
+
+// Utils
 function autoDeny(message, denyReasons) {
     message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
         .setTitle('Missing info')
@@ -406,6 +350,17 @@ function AttachEmbedImages(embed) {
     return embed;
 }
 
-module.exports.config = {
-    name: 'modmail',
+// Requirement Utils
+function collapseText(str) {
+    return str.toUpperCase().split(" ").join("");
+}
+function hasRequirement(content, requirement) {
+    return collapseText(content).includes(collapseText(requirement));
+}
+function missingRequirements(category, content) {
+    var missingList = '';
+    requirements[category].forEach(requirement => {
+        if (!hasRequirement(content, requirement)) missingList += `► Missing field: **${requirement}** \n`;
+    });
+    return missingList;
 }
