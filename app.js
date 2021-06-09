@@ -17,7 +17,6 @@ const   Discord =   require('discord.js'),
 
 const   Mongo = require('./mongo.js'),
         db = {
-            chatreports:    new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
             submissions:    new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
             moderator:      new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
         };
