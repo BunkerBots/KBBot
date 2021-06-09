@@ -1,50 +1,49 @@
-// Load dependencies
 require('dotenv').config();
-const config = require('./config.json'),
-    id = require('./id.json'),
-    { inspect } = require('util'),
-    Discord = require('discord.js'),
-    client = new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] }),
-    fs = require('fs'),
-    logger = require('./logger'),
-    Mongo = require('./mongo.js'),
-    // eslint-disable-next-line no-unused-vars
-    { MessageButton } = require('discord-buttons'), 
-    // eslint-disable-next-line no-unused-vars
-    disbut = require('discord-buttons')(client),
-    db = {
-        chatreports: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
-        submissions: new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
-        moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
-    },
-    Twit = require('twit'),
-    staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-    randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
+const env = (!process.argv[2] || process.argv[2] == 'test') ? 'DEV' : 'PROD';
 
-const twit = new Twit({
-    consumer_key:         process.env.TWITTER_CONSUMER_KEY,
-    consumer_secret:      process.env.TWITTER_CONSUMER_SECRET,
-    access_token:         process.env.TWITTER_ACCESS_TOKEN,
-    access_token_secret:  process.env.TWITTER_ACCESS_TOKEN_SECRET,
-    timeout_ms:           60*1000, // optional HTTP request timeout to apply to all requests.
-    strictSSL:            true, // optional - requires SSL certificates to be valid.
-     
-});
+// Load dependencies
+const   config =            require('./config.json'),
+        // eslint-disable-next-line no-unused-vars
+        disbut =            require('discord-buttons')(client),
+        fs =                require('fs'),
+        id =                require('./id.json'),
+        { inspect } =       require('util'),
+        logger =            require('./logger'),
+        // eslint-disable-next-line no-unused-vars
+        { MessageButton } = require('discord-buttons');
 
+const   Discord =   require('discord.js'),
+        client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] });
+
+const   Mongo = require('./mongo.js'),
+        db = {
+            chatreports:    new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'chatreports', init: true }),
+            submissions:    new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
+            moderator:      new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
+        };
 (async function init() { Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); })();
 
-let env;
-if (process.argv[2] == 'test' || !process.argv[2]) env = 'DEV';
-else env = 'PROD';
+const   Twit = require('twit'),
+        twit = new Twit({
+            consumer_key:         process.env.TWITTER_CONSUMER_KEY,
+            consumer_secret:      process.env.TWITTER_CONSUMER_SECRET,
+            access_token:         process.env.TWITTER_ACCESS_TOKEN,
+            access_token_secret:  process.env.TWITTER_ACCESS_TOKEN_SECRET,
+            timeout_ms:           60*1000, // optional HTTP request timeout to apply to all requests.
+            strictSSL:            true, // optional - requires SSL certificates to be valid. 
+        });
+    
+const   staffRoles = [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
+        randomRoles = staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
-//Loading commands from /commands directory, to client
-client.commands = new Discord.Collection();
 module.exports = {
     client: client,
     db: db,
     staffRoles: staffRoles,
 }
 
+//Loading commands from /commands directory, to client
+client.commands = new Discord.Collection();
 const files = fs.readdirSync("./commands/");
 const jsFiles = files.filter(f => f.split(".").pop() === "js");
 if (jsFiles.length <= 0) return console.log("[KB Bot] There aren't any commands!"); //JJ has fucked up
