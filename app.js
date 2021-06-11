@@ -202,9 +202,6 @@ client.on('message', async(message) => {
 });
 
 client.on('messageReactionAdd', async(reaction, user) => {
-    if (user.bot) return; // Ignore bot reactions
-    else if (reaction.message.channel.id == id.channels['bunker-bot-commands']) client.commands.get('modmail').react(client, reaction, user);
-
     if (env == 'PROD' && reaction.message.channel.id == id.channels["submissions-review"]) {
         if (user.bot) return; // Ignore bot reactions
         else client.commands.get('modmail').react(client, reaction, user);
@@ -212,8 +209,7 @@ client.on('messageReactionAdd', async(reaction, user) => {
 });
 
 client.on('clickButton', async btn => {
-    const buttonCmd = client.buttons.get(btn.id.split('_')[0]);
-    if (buttonCmd) {
+    if (env == 'PROD' && client.buttons.get(btn.id.split('_')[0])) {
         await buttonCmd(client, btn);
         if (!(btn.deferred === true || btn.replied === true)) return btn.reply.send('Error. Please contact a bot dev.');
     } else return btn.reply.send('Error. Please contact a bot dev.');
