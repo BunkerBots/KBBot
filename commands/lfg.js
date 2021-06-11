@@ -35,9 +35,9 @@ module.exports.run = async(client, message) => {
         }
 
         if (link.indexOf("https://krunker.io/?game=") == 0) {
-            const game = await getLinkInfo(link).catch(console.log);
+            const game = await getLinkInfo(link).catch(console.error);
             if (game) {
-                const map = await getMapInfo(game.map).catch(console.log);
+                const map = await getMapInfo(game.map).catch(console.error);
                 if (map)
                     if (map.thumbnail) eb.setImage(map.thumbnail);
                 eb.setColor(regions[game.region])

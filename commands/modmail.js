@@ -123,13 +123,16 @@ module.exports.react = async(client, reaction, user) => {
     await reaction.message.fetch();
     let embed = reaction.message.embeds[0];
     if (!embed || embed.hexColor != id.colours["YELLOW"]) return;
-    reaction.message.edit(embed.setColor('BLACK'));
-
+    reaction.message.edit({ embed: embed.setColor('BLACK') }).catch(e => {
+        console.error('ee', e);
+    });
     const member = await client.users.fetch(embed.author.name.match(/\((\d{17,19})\)/)[1], true, true);
 
     switch (reaction.emoji.id) {
         case id.emojis.yes:
-            await approveRequest(client, reaction, user, member, embed);
+            await approveRequest(client, reaction, user, member, embed).catch(e => {
+                console.error('eee', e);
+            });
             break;
         case id.emojis.no:
             {
@@ -137,7 +140,7 @@ module.exports.react = async(client, reaction, user) => {
                 const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
                     reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                     reasonMessage.delete();
-                    reaction.message.edit(embed.setColor('YELLOW'));
+                    reaction.message.edit({ embed: embed.setColor('YELLOW')});
                     return;
                 });
                 embed = denyRequest(member, user, reasonMessages.first().content, embed);
@@ -152,13 +155,12 @@ module.exports.react = async(client, reaction, user) => {
                 const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
                     reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                     editedMessage.delete();
-                    reaction.message.edit(embed.setColor('YELLOW'));
+                    reaction.message.edit({ embed: embed.setColor('YELLOW')});
                     return;
                 });
                 embed.addField('Original', embed.description)
                 .setDescription(editedMessages.first().content);
                 embed = await approveRequest(client, reaction, user, member, embed);
-                console.log(embed.title)
                 editedMessage.delete();
                 editedMessages.first().delete();
                 break;
@@ -176,12 +178,12 @@ module.exports.react = async(client, reaction, user) => {
             embed = denyRequest(member, user, 'This suggestion has already been made in the past.', embed);
             break;
         default:
-            reaction.messsage.edit(embed.setColor('YELLOW'));
+            reaction.messsage.edit({ embed: embed.setColor('YELLOW')});
             return;
     }
 
-    reaction.message.edit(embed);
-    if (embed.hexColor == id.colours.YELLOW) reaction.message.edit(embed.setColor('YELLOW'));
+    reaction.message.edit({ embed: embed });
+    if (embed.hexColor == id.colours.YELLOW) reaction.message.edit({ embed: embed.setColor('YELLOW')});
 
     //DB stuff
     const fetchUser = await moderator_db.get(user.id);

@@ -1,10 +1,9 @@
 require('dotenv').config();
-const env = (!process.argv[2] || process.argv[2] == 'test') ? 'DEV' : 'PROD';
+const env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD';
 
 // Load Dependencies
 const   Discord =   require('discord.js'),
         client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] }),
-
         config =            require('./config.json'),
         fs =                require('fs'),
         id =                require('./id.json'),
@@ -35,7 +34,7 @@ const   Discord =   require('discord.js'),
         randomRoles =   staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
 
 
-Object.keys(db).forEach(async t => await db[t].connect().catch(console.log)); 
+Object.keys(db).forEach(async t => await db[t].connect().catch(console.error)); 
 
 module.exports = {
     client: client,
@@ -46,7 +45,7 @@ module.exports = {
 // Load in commands
 client.commands = new Discord.Collection();
 const cmdFiles  = fs.readdirSync('./commands/').filter(f => f.includes('.js'));
-if (cmdFiles.length < 1) return console.log('[KB Bot] There aren\'t any commands'); // JJ has fucked up
+if (cmdFiles.length < 1) return console.info('[KB Bot] There aren\'t any commands'); // JJ has fucked up
 else for (const cmdFile of cmdFiles) {
     const pull = require(`./commands/${cmdFile}`)
     client.commands.set(pull.config.name, pull);
@@ -55,7 +54,7 @@ else for (const cmdFile of cmdFiles) {
 // Load in buttons
 client.buttons = new Discord.Collection();
 const btnFiles = fs.readdirSync('./buttons').filter(f => f.includes('.js'));
-if (btnFiles.length < 1) return console.log('[KB Bot] There aren\'t any buttons');
+if (btnFiles.length < 1) return console.info('[KB Bot] There aren\'t any buttons');
 else for (const btnFile of btnFiles) {
     const pull = require(`./buttons/${btnFile}`);
     client.buttons.set(btnFile.split('.')[0], pull);
@@ -66,7 +65,7 @@ client.login(process.env.TOKEN);
 
 // Event Handlers
 client.on('ready', async() => {
-    console.log('[Krunker Bunker Bot] ready to roll!');
+    console.info('[Krunker Bunker Bot] ready to roll!');
 
     // Host Only Start-up
     if (env == 'PROD') {
@@ -75,7 +74,7 @@ client.on('ready', async() => {
         const bunkerBotCommands = client.channels.resolve(id.channels["bunker-bot-commands"]);
         bunkerBotCommands.send(config.version);
 
-        // No clue what this is
+        // Log to bunkerbotCommands
         client.on('log', (...args) => {
             bunkerBotCommands.send(args.map(x => {
                 if (typeof x == 'string') return x;
@@ -111,7 +110,7 @@ client.on('ready', async() => {
         twitterStream.on('tweet', (tweet) => {
             console.info('TWITTER: ', tweet);
             if (tweet.user.screen_name != 'krunkerio' || tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
-            krunkerFeed.send(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`).catch(console.log);
+            krunkerFeed.send(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`).catch(console.error);
         });
     }
 });
@@ -220,11 +219,11 @@ async function evald(message) {
     try {
         let script = message.content.replace(`${config.prefix}execute `, '');
         if (script.includes('await')) script = `(async() => {${script}})()`;
-        console.log(script);
+        console.info(script);
         // eslint-disable-next-line no-eval
         let evaled = await eval(script);
         if (typeof evaled !== 'string') evaled = inspect(evaled);
-        console.log(clean(evaled));
+        console.info(clean(evaled));
         message.channel.send(clean(evaled), { code: 'xl' });
     } catch (e) {
         message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(inspect(e))}\n\`\`\``);
