@@ -1,8 +1,6 @@
-
-
 module.exports = async(client, btn) => {
     const roleID = btn.id.split('_')[1];
-    if (!roleID) return client.emit('log',`No roles found - ${roleID}`);
+    if (!roleID) return client.emit('log',`No role found: ${roleID}`);
     const role = await btn.guild.roles.fetch(roleID);
 
     await btn.clicker.fetch()
@@ -14,5 +12,4 @@ module.exports = async(client, btn) => {
         clickerMember.roles.add(role);
         return btn.reply.send(`${role} was added to you`, true);
     }
-    
 }
