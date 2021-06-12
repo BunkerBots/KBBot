@@ -122,81 +122,87 @@ module.exports.react = async(client, reaction, user) => {
     await reaction.fetch();
     await reaction.message.fetch();
     let embed = reaction.message.embeds[0];
-    if (!embed || embed.hexColor != id.colours["YELLOW"]) return;
-    reaction.message.edit({ embed: embed.setColor('BLACK') }).catch(e => {
-        console.error('ee', e);
-    });
+    if (!embed || (embed.hexColor != id.colours["YELLOW"] && reaction.emoji.id != id.emojis.undo)) return;
+    reaction.message.edit({ embed: embed.setColor('BLACK') }).catch(e => { console.error() });
     const member = await client.users.fetch(embed.author.name.match(/\((\d{17,19})\)/)[1], true, true);
 
     switch (reaction.emoji.id) {
-        case id.emojis.yes:
+        case id.emojis.yes: {
             await approveRequest(client, reaction, user, member, embed).catch(e => {
                 console.error('eee', e);
             });
             break;
-        case id.emojis.no:
-            {
-                const reasonMessage = await reaction.message.channel.send(`<@${user.id}> Please provide a reason:`);
-                const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
-                    reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
-                    reasonMessage.delete();
-                    reaction.message.edit({ embed: embed.setColor('YELLOW')});
-                    return;
-                });
-                embed = denyRequest(member, user, reasonMessages.first().content, embed);
+        }
+        case id.emojis.no: {
+            const reasonMessage = await reaction.message.channel.send(`<@${user.id}> Please provide a reason:`);
+            const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { 
+                max: 1,
+                time: 60000,
+                errors: ['time'],
+            }).catch(() => {
+                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                 reasonMessage.delete();
-                reasonMessages.first().delete();
-                break;
-            }
-
-        case id.emojis.script:
-            {
-                const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
-                const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
-                    reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
-                    editedMessage.delete();
-                    reaction.message.edit({ embed: embed.setColor('YELLOW')});
-                    return;
-                });
-                embed.addField('Original', embed.description)
-                .setDescription(editedMessages.first().content);
-                embed = await approveRequest(client, reaction, user, member, embed);
+                return reaction.message.edit({ embed: embed.setColor('YELLOW')});
+            });
+            embed = denyRequest(member, user, reasonMessages.first().content, embed);
+            reasonMessage.delete();
+            reasonMessages.first().delete();
+            break;
+        }
+        case id.emojis.script: {
+            const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
+            const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { 
+                max: 1,
+                time: 60000,
+                errors: ['time'],
+            }).catch(() => {
+                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                 editedMessage.delete();
-                editedMessages.first().delete();
-                break;
-            }
-        case id.emojis.formatting:
+                return reaction.message.edit({ embed: embed.setColor('YELLOW')});
+            });
+            embed.addField('Original', embed.description)
+                .setDescription(editedMessages.first().content);
+            embed = await approveRequest(client, reaction, user, member, embed);
+            editedMessage.delete();
+            editedMessages.first().delete();
+            break;
+        }
+        case id.emojis.formatting: {
             embed = denyRequest(member, user, 'Incorrect formatting.', embed);
             break;
-        case id.emojis.missing:
+        }
+        case id.emojis.missing: {
             embed = denyRequest(member, user, 'Missing information.', embed);
             break;
-        case id.emojis.calendar:
+        }
+        case id.emojis.calendar: {
             embed = denyRequest(member, user, 'Please wait a week between submitting clan board requests.', embed);
             break;
-        case id.emojis.discordTag:
+        }
+        case id.emojis.discordTag: {
             embed = denyRequest(member, user, 'This suggestion has already been made in the past.', embed);
             break;
-        default:
-            reaction.messsage.edit({ embed: embed.setColor('YELLOW')});
-            return;
+        }
+        case id.emojis.undo: {
+            embed = undo(member, user, embed);
+            break;
+        }
+        default: {
+            return reaction.messsage.edit({ embed: embed.setColor('YELLOW')});
+        }
     }
 
     reaction.message.edit({ embed: embed });
-    if (embed.hexColor == id.colours.YELLOW) reaction.message.edit({ embed: embed.setColor('YELLOW')});
+    if (embed.hexColor == id.colours.BLACK) reaction.message.edit({ embed: embed.setColor('YELLOW')});
 
     //DB stuff
     const fetchUser = await moderator_db.get(user.id);
-    const discordUser = await client.users.fetch(user.id);
-    const submissions = fetchUser ? fetchUser.submissions + 1 : 1;
-    const update = await moderator_db.set(user.id, { username: discordUser.username, submissions: submissions });
-    if (!update) {
-        reaction.mesage.channel.send(new MessageEmbed()
-            .setTitle('Database Error')
-            .setColor('RED')
-            .setDescription('A database error has occured. Please contact JJ if he has not been contacted already. Your submission approval was not documented in your stats.')
-            .setTimestamp());
-    }
+    const update = await moderator_db.set(user.id, { username: user.username, submissions: fetchUser ? fetchUser.submissions + 1 : 1 });
+    if (!update) reaction.mesage.channel.send(new MessageEmbed()
+        .setTitle('Database Error')
+        .setColor('RED')
+        .setDescription('A database error has occured. Please contact JJ if he has not been contacted already. Your submission approval was not documented in your stats.')
+        .setTimestamp());
 }
 
 module.exports.config = {
@@ -225,7 +231,7 @@ async function approvalRequest(client, message, embed) {
     message.author.createDM().then(dm => dm.send(new MessageEmbed()
         .setTitle(`Submission ID: #${embed.title.split('#')[1]}`)
         .setDescription('Summary of your submission can be found below:')
-        .addField('**Type**', `${embed.title.substring(0, embed.title.indexOf('#'))}`)
+        .addField('**Type:**', `${embed.title.substring(0, embed.title.indexOf('#'))}`)
         .addField('**Content:**', `${embed.description}`)
         .setColor('YELLOW')
         .setTimestamp()).catch(logger.error));
@@ -237,6 +243,7 @@ async function approvalRequest(client, message, embed) {
         m.react(client.emojis.cache.get(id.emojis.missing));
         m.react(client.emojis.cache.get(id.emojis.calendar));
         m.react(client.emojis.cache.get(id.emojis.discordTag));
+        m.react(client.emojis.cache.get(id.emojis.undo));
     });
 }
 
@@ -350,6 +357,22 @@ function AttachEmbedImages(embed) {
     if (description.length > 0) embed.description = description.join(' ');
     if (links.length > 0) embed.attachFiles(links)
     return embed;
+}
+
+function undo(member, user, embed) {
+    member.createDM().then(dm => {
+        dm.send(new MessageEmbed()
+            .setTitle(`Submission request ID: #${embed.title.split('#')[1]} undone`)
+            .setColor('BLACK')
+            .setDescription('Your submission request\'s previous decision was undone. This may mean that a moderator made a mistake. If you are unsure of why the submission was undone, please contact the moderator listed.')
+            .setFooter(`Submission undone by: ${user.username}`, user.displayAvatarURL())
+            .setTimestamp());
+    });
+    return embed.setColor('YELLOW')
+        .setTitle(embed.title.replace('denied', 'request').replace('approved', 'request'))
+        .setAuthor(embed.author.name, embed.author.iconURL)
+        .setDescription(embed.description)
+        .setTimestamp();
 }
 
 // Requirement Utils
