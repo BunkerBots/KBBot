@@ -31,7 +31,7 @@ const   Discord =   require('discord.js'),
         }),
         
         staffRoles =    [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-        randomRoles =   staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
+        randomRoles =   staffRoles.concat([id.roles.beginner, id.roles.novice, id.roles.active, id.roles.apprentice, id.roles.devoted, id.roles.legendary, id.roles.mythical, id.roles.nolife, id.roles.godly, id.roles.ascended]);
 
 
 Object.keys(db).forEach(async t => await db[t].connect().catch(console.error)); 
