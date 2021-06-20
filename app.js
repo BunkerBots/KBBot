@@ -31,7 +31,7 @@ const   Discord =   require('discord.js'),
         }),
         
         staffRoles =    [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-        randomRoles =   staffRoles.concat([id.roles.beginner, id.roles.novice, id.roles.active, id.roles.apprentice, id.roles.devoted, id.roles.legendary, id.roles.mythical, id.roles.nolife, id.roles.godly, id.roles.ascended]);
+        linkRoles =   staffRoles.concat([id.roles.beginner, id.roles.novice, id.roles.active, id.roles.apprentice, id.roles.devoted, id.roles.legendary, id.roles.mythical, id.roles.nolife, id.roles.godly, id.roles.ascended]);
 
 
 Object.keys(db).forEach(async t => await db[t].connect().catch(console.error)); 
@@ -165,11 +165,12 @@ client.on('message', async(message) => {
                 case id.channels["submissions"]:
                     cmdToRun = 'modmail';
                     break;
+                case id.channels['game-discussion']:
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
                         var canBypass = false;
-                        randomRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
-                        if (!canBypass) logger.messageDeleted(message, 'Random Chat Link', 'BLURPLE');
+                        linkRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+                        if (!canBypass) logger.messageDeleted(message, 'Member Link', 'BLURPLE');
                     }
                     break;
             }
