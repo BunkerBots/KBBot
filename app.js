@@ -122,6 +122,7 @@ client.on('message', async(message) => {
 
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
+            if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
             if (message.author.bot || !message.guild) return; // Ignore bots and DMs
 
             var cmdToRun = '';
