@@ -194,6 +194,7 @@ module.exports.react = async(client, reaction, user) => {
 
     reaction.message.edit({ embed: embed });
     if (embed.hexColor == id.colours.BLACK) reaction.message.edit({ embed: embed.setColor('YELLOW')});
+    if (reaction.message.embeds[0].hexColor != id.colours.YELLOW) reaction.message.unpin();
 
     //DB stuff
     const fetchUser = await moderator_db.get(user.id);
@@ -244,6 +245,7 @@ async function approvalRequest(client, message, embed) {
         m.react(client.emojis.cache.get(id.emojis.calendar));
         m.react(client.emojis.cache.get(id.emojis.discordTag));
         m.react(client.emojis.cache.get(id.emojis.undo));
+        m.pin();
     });
 }
 
