@@ -14,15 +14,17 @@ module.exports.run = async(client, message) => {
         prompt.delete();
         ping.first().delete();
 
-        client.channels.resolve(id.channels["krunker-feed"]).send(`${pingEnabled ? `<@&${id.roles.socialsnotif}>` : ''}${message.content.substring(message.content.indexOf(' '))}`);
+        client.channels.resolve(id.channels["krunker-feed"]).send(`${pingEnabled ? `<@&${id.roles.socialsnotif}>` : undefined}${message.content.substring(message.content.indexOf(' '))}`);
         message.reply({
-            embeds: new MessageEmbed()
-                .setColor('#00ff0a')
-                .setTitle('Social Thingy')
-                .setDescription(`Success! Post is now public in <#${id.channels["krunker-feed"]}>`)
-                .addField('Ping Enabled?', `${pingEnabled ? 'Yes' : 'No'}`)
-                .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
-                .setTimestamp()
+            embeds: [
+                new MessageEmbed()
+                    .setColor('#00ff0a')
+                    .setTitle('Social Thingy')
+                    .setDescription(`Success! Post is now public in <#${id.channels["krunker-feed"]}>`)
+                    .addField('Ping Enabled?', `${pingEnabled ? 'Yes' : 'No'}`)
+                    .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
+                    .setTimestamp()
+            ]
         });
 }
 

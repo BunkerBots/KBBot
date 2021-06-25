@@ -26,7 +26,7 @@ const   Discord =   require('discord.js'),
         }),
         
         staffRoles =    [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-        randomRoles =   staffRoles.concat([id.roles.novice, id.roles.active, id.roles.devoted, id.roles.legendary, id.roles.godly, id.roles.nolife]);
+        linkRoles =   staffRoles.concat([id.roles.beginner, id.roles.novice, id.roles.active, id.roles.apprentice, id.roles.devoted, id.roles.legendary, id.roles.mythical, id.roles.nolife, id.roles.godly, id.roles.ascended]);
 
 Discord.TextChannel.prototype.sendEmbed = function sendEmbed(embed) {
     return this.send({ embeds: [embed] });
@@ -119,6 +119,7 @@ client.on('message', async(message) => {
 
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
+            if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
             if (message.author.bot || !message.guild) return; // Ignore bots and DMs
 
             var cmdToRun = '';
@@ -162,11 +163,12 @@ client.on('message', async(message) => {
                 case id.channels["submissions"]:
                     cmdToRun = 'modmail';
                     break;
+                case id.channels['game-discussion']:
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
                         var canBypass = false;
-                        randomRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
-                        if (!canBypass) logger.messageDeleted(message, 'Random Chat Link', 'BLURPLE');
+                        linkRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+                        if (!canBypass) logger.messageDeleted(message, 'Member Link', 'BLURPLE');
                     }
                     break;
             }
@@ -197,7 +199,7 @@ client.on('message', async(message) => {
     }, 250);
 });
 
-client.on('messageReactionAdd', async(reaction, user) => {
+client.on('messageReactionAdd', async (reaction, user) => {
     if (env == 'PROD' && reaction.message.channel.id == id.channels["submissions-review"]) {
         if (user.bot) return; // Ignore bot reactions
         else client.commands.get('modmail').react(client, reaction, user);
@@ -205,11 +207,12 @@ client.on('messageReactionAdd', async(reaction, user) => {
 });
 
 client.on('interaction', async btn => {
-    const buttonCmd = client.buttons.get(btn.id.split('_')[0]);
+    if (!btn.isButton()) return;
+    const buttonCmd = client.buttons.get(btn.customID.split('_')[0]);
     if (env == 'PROD' && buttonCmd) {
         await buttonCmd(client, btn);
-        if (!(btn.deferred === true || btn.replied === true)) return btn.reply.send('Error. Please contact a bot dev.');
-    } else return btn.reply.send('Error. Please contact a bot dev.');
+        if (!(btn.deferred === true || btn.replied === true)) return btn.reply({ content: 'Error. Please contact a bot dev.', ephemeral: true });
+    } else return btn.reply({ content: 'Error. Please contact a bot dev. Button reply not found', ephemeral: true });
 });
 
 // Weird stuff

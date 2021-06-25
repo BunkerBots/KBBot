@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageAttachment } = require('discord.js'),
+const { MessageEmbed, MessageAttachment, TextChannel } = require('discord.js'),
 
     id =        require('../id.json'),
     logger =    require('../logger'),
@@ -35,6 +35,7 @@ module.exports.run = async(client, message) => {
         .setColor('YELLOW')
         .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
         .setTimestamp();
+    var files = [];
 
     if (message.content.toUpperCase().startsWith('SUGGEST')) {
         if (message.attachments.size > 1) denyReasons = '► **Too many attachments**';
@@ -46,15 +47,17 @@ module.exports.run = async(client, message) => {
     } else if (message.content.toUpperCase().startsWith('CLIP')) {
         if (videos.every(domain => !message.content.includes(domain))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
         else embed.setTitle('Clips of the week submission request')
-            .setDescription(message.content.substring('Clip:'.length).trim().split(" ").join(" "));
+            .setDescription(message.content.substring('Clip:'.length).trim());
     } else if (message.content.toUpperCase().includes('CSS')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
         else if (message.attachments.size > 2) denyReasons = '► **Too many attachments** \n';
         denyReasons += missingRequirements('community-css', message.content);
         
-        if (denyReasons == '') embed.setTitle('Community CSS submission request')
-            .setDescription(message.content)
-            .attachFiles(message.attachments.array());
+        if (denyReasons == '') {
+            embed.setTitle('Community CSS submission request')
+                .setDescription(message.content)
+            files = message.attachments.array()
+        }
     } else if (message.content.toUpperCase().includes('CLAN NAME')) {
         denyReasons += missingRequirements('clan-board', message.content);
 
@@ -111,7 +114,7 @@ module.exports.run = async(client, message) => {
 
     if (denyReasons == '') {
         const fetchData = await submissions_db.get(message.guild.id);
-        approvalRequest(client, message, embed.setTitle(`${embed.title} #${fetchData.subID}`));
+        approvalRequest(client, message, embed.setTitle(`${embed.title} #${fetchData.subID}`), files);
         await submissions_db.set(message.guild.id, { subID: fetchData.subID + 1 });
         logger.messageDeleted(message, 'Modmail', 'NAVY');
     } else {
@@ -122,13 +125,13 @@ module.exports.run = async(client, message) => {
     }
 }
 
-module.exports.react = async(client, reaction, user) => {
+module.exports.react = async (client, reaction, user) => {
     await reaction.fetch();
     await reaction.message.fetch();
     let embed = reaction.message.embeds[0];
     // eslint-disable-next-line no-extra-parens
     if (!embed || (embed.hexColor != id.colours["YELLOW"] && reaction.emoji.id != id.emojis.undo)) return;
-    reaction.message.edit({ embed: embed.setColor('BLACK') }).catch(() => { console.error() });
+    reaction.message.edit({ embeds: [embed.setColor('BLACK')] }).catch(() => { console.error() });
     const member = await client.users.fetch(embed.author.name.match(/\((\d{17,19})\)/)[1], true, true);
 
     switch (reaction.emoji.id) {
@@ -147,7 +150,7 @@ module.exports.react = async(client, reaction, user) => {
             }).catch(() => {
                 reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                 reasonMessage.delete();
-                return reaction.message.edit({ embed: embed.setColor('YELLOW')});
+                return reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
             });
             embed = denyRequest(member, user, reasonMessages.first().content, embed);
             reasonMessage.delete();
@@ -163,7 +166,7 @@ module.exports.react = async(client, reaction, user) => {
             }).catch(() => {
                 reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
                 editedMessage.delete();
-                return reaction.message.edit({ embed: embed.setColor('YELLOW')});
+                return reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
             });
             embed.addField('Original', embed.description)
                 .setDescription(editedMessages.first().content);
@@ -193,12 +196,13 @@ module.exports.react = async(client, reaction, user) => {
             break;
         }
         default: {
-            return reaction.messsage.edit({ embed: embed.setColor('YELLOW')});
+            return reaction.messsage.edit({ embeds: [embed.setColor('YELLOW')] });
         }
     }
 
-    reaction.message.edit({ embed: embed });
-    if (embed.hexColor == id.colours.BLACK) reaction.message.edit({ embed: embed.setColor('YELLOW')});
+    reaction.message.edit({ embeds: [embed] });
+    if (embed.hexColor == id.colours.BLACK) reaction.message.edit({ embeds: [embed.setColor('YELLOW')]});
+    if (reaction.message.embeds[0].hexColor != id.colours.YELLOW) reaction.message.unpin();
 
     //DB stuff
     const fetchUser = await moderator_db.get(user.id);
@@ -227,10 +231,10 @@ function autoDeny(message, denyReasons) {
     ).then(m => { m.delete({ timeout: 60000 }) });
 }
 
-async function approvalRequest(client, message, embed) {
+async function approvalRequest(client, message, embed, files) {
     if (embed.image) embed = await proxyEmbedImage(client, embed);
     if (embed.description.includes('https://')) embed = AttachEmbedImages(embed);
-
+    if (files.length > 0) files = await proxyFiles(client, files);
     message.channel.send({
         content: `<@${message.author.id}>,`,
         embeds: [
@@ -241,14 +245,21 @@ async function approvalRequest(client, message, embed) {
                 .setTimestamp()
         ]
     }).then(m => { m.delete({ timeout: 30000 }) });
-    message.author.createDM().then(dm => dm.sendEmbed(new MessageEmbed()
-        .setTitle(`Submission ID: #${embed.title.split('#')[1]}`)
-        .setDescription('Summary of your submission can be found below:')
-        .addField('**Type:**', `${embed.title.substring(0, embed.title.indexOf('#'))}`)
-        .addField('**Content:**', `${embed.description}`)
-        .setColor('YELLOW')
-        .setTimestamp()).catch(logger.error));
-    client.channels.resolve(id.channels["submissions-review"]).sendEmbed(embed).then(m => {
+    message.author.createDM().then(dm => dm.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle(`Submission ID: #${embed.title.split('#')[1]}`)
+                .setDescription('Summary of your submission can be found below:')
+                .addField('**Type:**', `${embed.title.substring(0, embed.title.indexOf('#'))}`)
+                .addField('**Content:**', `${embed.description}`)
+                .setColor('YELLOW')
+                .setTimestamp()
+        ]
+    }).catch(logger.error));
+    client.channels.resolve(id.channels["submissions-review"]).send({
+        embeds: [embed],
+        files: files.length > 0 ? files : undefined
+    }).then(m => {
         m.react(client.emojis.cache.get(id.emojis.yes));
         m.react(client.emojis.cache.get(id.emojis.no));
         m.react(client.emojis.cache.get(id.emojis.script));
@@ -257,23 +268,26 @@ async function approvalRequest(client, message, embed) {
         m.react(client.emojis.cache.get(id.emojis.calendar));
         m.react(client.emojis.cache.get(id.emojis.discordTag));
         m.react(client.emojis.cache.get(id.emojis.undo));
+        m.pin();
     });
 }
 
 async function approveRequest(client, reaction, user, member, embed) {
     let sentMsg;
+    let files = [];
     const post = new MessageEmbed()
         .setAuthor(`${member.tag} (${member.id})`, member.displayAvatarURL())
         .setDescription(embed.description)
         .setFooter('Go to #submissions to submit a request')
+        .setColor('GOLD')
         .setTimestamp();
     if (embed.image) post.setImage(embed.image.url);
-    if (reaction.message.attachments.size > 0) post.attachFiles(reaction.message.attachments.array());
+    if (reaction.message.attachments.size > 0) files = reaction.message.attachments.array();
     let title = embed.title.split(' ');
     title.pop();
     switch (title.join(' ')) {
         case 'Suggestions submission request':
-            sentMsg = await client.channels.resolve(id.channels["suggestions"]).sendEmbed(post.setColor('YELLOW'));
+            sentMsg = await client.channels.resolve(id.channels["suggestions"]).sendEmbedWithOptionalFile(post.setColor('YELLOW'), files);
             sentMsg.react("👍");
             sentMsg.react("👎");
             break;
@@ -281,36 +295,40 @@ async function approveRequest(client, reaction, user, member, embed) {
             sentMsg = await client.channels.resolve(id.channels["clips-of-the-week"]).send(`Clip by: <@${member.id}> \nCheck <#${id.channels['submissions']}> if you would like to submit a clip.\n${embed.description}`);
             break;
         case 'Clan boards submission request':
-            sentMsg = await client.channels.resolve(id.channels["clan-boards"]).send({ content: `${post.description.substring(post.description.indexOf('discord.gg/')).split(' ')[0].split('`')[0]}`, embeds: [post] });
+            sentMsg = await client.channels.resolve(id.channels["clan-boards"]).send({ content: `${post.description.substring(post.description.indexOf('discord.gg/')).split(' ')[0].split('`')[0]}`, embeds: [post], files: files.length > 0 ? files : undefined });
             break;
         case 'Customizations submission request':
-            sentMsg = await client.channels.resolve(id.channels["customizations"]).sendEmbed(post.setImage(embed.image.url));
+            sentMsg = await client.channels.resolve(id.channels["customizations"]).sendEmbedWithOptionalFile(post.setImage(embed.image.url), files);
             break;
         case 'Community maps submission request':
-            sentMsg = await client.channels.resolve(id.channels["community-maps"]).sendEmbed(post);
+            sentMsg = await client.channels.resolve(id.channels["community-maps"]).sendEmbedWithOptionalFile(post, files);
             break;
         case 'Community mods submission request':
-            sentMsg = await client.channels.resolve(id.channels["community-mods"]).sendEmbed(post);
+            sentMsg = await client.channels.resolve(id.channels["community-mods"]).sendEmbedWithOptionalFile(post, files);
             break;
         case 'Skin vote submission request':
-            sentMsg = await client.channels.resolve(id.channels["skin-showcase"]).sendEmbed(post);
+            sentMsg = await client.channels.resolve(id.channels["skin-showcase"]).sendEmbedWithOptionalFile(post, files);
             sentMsg.react(client.emojis.cache.get(id.emojis.yes));
             sentMsg.react(client.emojis.cache.get(id.emojis.no));
             break;
         case 'Community CSS submission request':
-            sentMsg = await client.channels.resolve(id.channels["community-css"]).sendEmbed(post);
+            sentMsg = await client.channels.resolve(id.channels["community-css"]).sendEmbedWithOptionalFile(post, files);
             break;
             // case 'Bug reports submission request':
             //     break;
     }
     if (sentMsg) {
         member.createDM(true).then(dm => {
-            dm.sendEmbed(new MessageEmbed()
-                .setColor('GREEN')
-                .setTitle('Submission Posted')
-                .setDescription(`Thank you for your submission. View your submission [here](${sentMsg.url}).`)
-                .setFooter('Submission approved by: ' + user.username, user.displayAvatarURL())
-                .setTimestamp());
+            dm.send({
+                embeds: [
+                    new MessageEmbed()
+                        .setColor('GREEN')
+                        .setTitle('Submission Posted')
+                        .setDescription(`Thank you for your submission. View your submission [here](${sentMsg.url}).`)
+                        .setFooter('Submission approved by: ' + user.username, user.displayAvatarURL())
+                        .setTimestamp()
+                ]
+            });
         });
         return embed.setColor('GREEN')
             .setTitle(embed.title.replace('request', 'approved'))
@@ -328,13 +346,17 @@ async function approveRequest(client, reaction, user, member, embed) {
 
 function denyRequest(member, user, reason, embed) {
     member.createDM().then(dm => {
-        dm.sendEmbed(new MessageEmbed()
-            .setTitle(`Submission request ID: #${embed.title.split('#')[1]} denied`)
-            .setColor('ORANGE')
-            .setDescription('Your submission request has been denied. For help, please check out the guide [here](https://discord.com/channels/448194623580667916/779620494328070144/782082253345390592). If you think this is a mistake, please contact ' + user.tag)
-            .addField('Reason:', reason)
-            .setFooter('Submission denied by ' + user.username, user.displayAvatarURL())
-            .setTimestamp());
+        dm.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle(`Submission request ID: #${embed.title.split('#')[1]} denied`)
+                    .setColor('ORANGE')
+                    .setDescription('Your submission request has been denied. For help, please check out the guide [here](https://discord.com/channels/448194623580667916/779620494328070144/782082253345390592). If you think this is a mistake, please contact ' + user.tag)
+                    .addField('Reason:', reason)
+                    .setFooter('Submission denied by ' + user.username, user.displayAvatarURL())
+                    .setTimestamp()
+            ]
+        });
     });
     return embed.setColor('RED')
         .setTitle(embed.title.replace('request', 'denied'))
@@ -346,6 +368,11 @@ function denyRequest(member, user, reason, embed) {
 async function proxyEmbedImage(client, embed) {
     const proxy = await client.channels.resolve(id.channels["submissions-extra"]).send({ files: [new MessageAttachment(embed.image.url)] });
     return embed.setImage(proxy.attachments.array()[0].url);
+}
+
+async function proxyFiles(client, files) {
+    const proxy = await client.channels.resolve(id.channels["submissions-extra"]).send({ files });
+    return proxy.attachments;
 }
 
 function AttachEmbedImages(embed) {
@@ -374,12 +401,16 @@ function AttachEmbedImages(embed) {
 
 function undo(member, user, embed) {
     member.createDM().then(dm => {
-        dm.sendEmbed(new MessageEmbed()
-            .setTitle(`Submission request ID: #${embed.title.split('#')[1]} undone`)
-            .setColor('BLACK')
-            .setDescription('Your submission request\'s previous decision was undone. This may mean that a moderator made a mistake. If you are unsure of why the submission was undone, please contact the moderator listed.')
-            .setFooter(`Submission undone by: ${user.username}`, user.displayAvatarURL())
-            .setTimestamp());
+        dm.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle(`Submission request ID: #${embed.title.split('#')[1]} undone`)
+                    .setColor('BLACK')
+                    .setDescription('Your submission request\'s previous decision was undone. This may mean that a moderator made a mistake. If you are unsure of why the submission was undone, please contact the moderator listed.')
+                    .setFooter(`Submission undone by: ${user.username}`, user.displayAvatarURL())
+                    .setTimestamp()
+            ]
+        });
     });
     return embed.setColor('YELLOW')
         .setTitle(embed.title.replace('denied', 'request').replace('approved', 'request'))
@@ -401,4 +432,14 @@ function missingRequirements(category, content) {
         if (!hasRequirement(content, requirement)) missingList += `► Missing field: **${requirement}** \n`;
     });
     return missingList;
+}
+
+TextChannel.prototype.sendEmbedWithOptionalFile = function sendEmbedWithOptionalFile(embed, files) {
+    if (files.length == 0) return this.sendEmbed(embed);
+    else {
+        this.send({
+            embeds: [embed],
+            files
+        })
+    }
 }

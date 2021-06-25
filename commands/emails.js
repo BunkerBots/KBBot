@@ -5,7 +5,7 @@ module.exports.run = (client, message) => {
         mention = args.length > 1 && args[1].match(/<?@?!?(\d{17,19})>?/) ? args[1].replace('<@', '').replace('!', '').replace('>', '') : null;
 
     message.channel.send({
-        content: mention != null ? `<@${mention}>,` : '',
+        content: mention != null ? `<@${mention}>,` : undefined,
         embeds: [
             new MessageEmbed()
             .setTitle('**What email should I contact for support?**')

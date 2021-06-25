@@ -101,7 +101,7 @@ function stonks(client, message) {
 function miniModBase(message, str) {
     var canAccess = users.includes(message.author.id); // Checks if author is in the access list
     if (!canAccess) roles.forEach(role => { if (message.member.roles.cache.has(role)) canAccess = true; return }); // If author is not in access list, checks if roles they have are.
-    if (canAccess) message.channel.send(`${message.content.split(' ').length > 1 ? `<@${message.content.split(' ')[1]}> ` : ''}${str}`);
+    if (canAccess) message.channel.send(`${message.content.split(' ').length > 1 ? `<@${message.content.split(' ')[1]}> ` : undefined}${str}`);
     logger.messageDeleted(message, 'Market command', 'PURPLE');
 }
 
