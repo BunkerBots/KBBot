@@ -2,7 +2,7 @@ const { MessageEmbed } = require("discord.js");
 
 module.exports = {
     messageDeleted(message, reason, colour) {
-        message.client.channels.cache.get('770758419737083944').send(new MessageEmbed()
+        message.client.channels.cache.get('770758419737083944').sendEmbed(new MessageEmbed()
             .setTitle('Message Deleted')
             .setColor(colour)
             .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())

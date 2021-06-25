@@ -27,21 +27,30 @@ module.exports.run = (client, message) => {
         if (socials.every(domain => !message.content.includes(domain))) rulesBroken += `► ${rules.social} \n`;
         if (videos.every(domain => !message.content.includes(domain))) rulesBroken += `► ${rules.video}`;
         if (rulesBroken != '') {
-            message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
-                .setTitle('Please make sure you read the rules about submitting a report')
-                .setColor('ORANGE')
-                .setDescription('Your report has broken the following rule(s): \n' + rulesBroken)
-                .setTimestamp()
+            message.channel.send({
+                content: `<@${message.author.id}>,`, embeds: [
+                    new MessageEmbed()
+                        .setTitle('Please make sure you read the rules about submitting a report')
+                        .setColor('ORANGE')
+                        .setDescription('Your report has broken the following rule(s): \n' + rulesBroken)
+                        .setTimestamp()
+                ]
+            }
             ).then(msg => { msg.delete({ timeout: 90000 }) }).catch(console.error);
             logger.messageDeleted(message, 'Hacker Report - Missing required info', 'RED');
         } else {
-            message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
-                .setTitle('Thank you')
-                .setColor('GREEN')
-                .setDescription('Your report has been submitted for review. Thank you for the report.')
-                .setTimestamp()
+            message.channel.send({
+                content: `<@${message.author.id}>,`,
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle('Thank you')
+                        .setColor('GREEN')
+                        .setDescription('Your report has been submitted for review. Thank you for the report.')
+                        .setTimestamp()
+                ]
+            }
             ).then(msg => { msg.delete({ timeout: 20000 }) }).catch(console.error);
-            client.channels.cache.get(id.channels["hacker-reports"]).send(new MessageEmbed()
+            client.channels.cache.get(id.channels["hacker-reports"]).sendEmbed(new MessageEmbed()
                 .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
                 .setColor('BLURPLE')
                 .addField('► Content: ', message.content)
