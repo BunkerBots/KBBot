@@ -3,17 +3,12 @@ const env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD';
 
 // Load Dependencies
 const   Discord =   require('discord.js'),
-        client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'] }),
+        client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'], intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS'] }),
         config =            require('./config.json'),
         fs =                require('fs'),
         id =                require('./id.json'),
         { inspect } =       require('util'),
         logger =            require('./logger'),
-        // eslint-disable-next-line no-unused-vars
-        disbut =            require('discord-buttons')(client),
-        // eslint-disable-next-line no-unused-vars
-        { MessageButton } = require('discord-buttons'),
-
         Mongo = require('./mongo.js'),
         db = {
             submissions:    new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
@@ -33,7 +28,9 @@ const   Discord =   require('discord.js'),
         staffRoles =    [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
         linkRoles =   staffRoles.concat([id.roles.beginner, id.roles.novice, id.roles.active, id.roles.apprentice, id.roles.devoted, id.roles.legendary, id.roles.mythical, id.roles.nolife, id.roles.godly, id.roles.ascended]);
 
-
+Discord.TextChannel.prototype.sendEmbed = function sendEmbed(embed) {
+    return this.send({ embeds: [embed] });
+}
 Object.keys(db).forEach(async t => await db[t].connect().catch(console.error)); 
 
 module.exports = {
@@ -98,10 +95,10 @@ client.on('ready', async() => {
         // Unhandled Error Logging
         const log = await client.channels.fetch(id.channels["log"]);
         process.on('uncaughtException', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'});
+            log.send({content: '```js\n' + require('util').inspect(e) + '```', disableMentions: 'all'});
         });
         process.on('unhandledRejection', (e) => {
-            log.send('```js\n' + require('util').inspect(e) + '```', { disableMentions: 'all'});
+            log.send({content: '```js\n' + require('util').inspect(e) + '```', disableMentions: 'all'});
         });
 
         // Twitter
@@ -202,19 +199,20 @@ client.on('message', async(message) => {
     }, 250);
 });
 
-client.on('messageReactionAdd', async(reaction, user) => {
+client.on('messageReactionAdd', async (reaction, user) => {
     if (env == 'PROD' && reaction.message.channel.id == id.channels["submissions-review"]) {
         if (user.bot) return; // Ignore bot reactions
         else client.commands.get('modmail').react(client, reaction, user);
     }
 });
 
-client.on('clickButton', async btn => {
-    const buttonCmd = client.buttons.get(btn.id.split('_')[0]);
+client.on('interaction', async btn => {
+    if (!btn.isButton()) return;
+    const buttonCmd = client.buttons.get(btn.customID.split('_')[0]);
     if (env == 'PROD' && buttonCmd) {
         await buttonCmd(client, btn);
-        if (!(btn.deferred === true || btn.replied === true)) return btn.reply.send('Error. Please contact a bot dev.');
-    } else return btn.reply.send('Error. Please contact a bot dev.');
+        if (!(btn.deferred === true || btn.replied === true)) return btn.reply({ content: 'Error. Please contact a bot dev.', ephemeral: true });
+    } else return btn.reply({ content: 'Error. Please contact a bot dev. Button reply not found', ephemeral: true });
 });
 
 // Weird stuff

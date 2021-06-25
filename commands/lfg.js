@@ -45,20 +45,23 @@ module.exports.run = async(client, message) => {
                     .addField('Map', game.map, true)
                     .addField('Game Mode', game.mode, true)
 
-                message.channel.send(`<@${message.author.id}>,`, eb).then(msg => { msg.delete({ timeout: 600000 }) }).catch(console.error);
+                message.channel.send({ content: `<@${message.author.id}>,`, embeds: [eb] }).then(msg => { msg.delete({ timeout: 600000 }) }).catch(console.error);
                 autodel(message);
             } else {
-                message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
-                    .setColor('RED')
-                    .setTitle('Error')
-                    .setDescription('Invalid game link.')
-                    .setTimestamp()
-                    .setFooter(`${message.member.displayName} (${message.author.tag})`, message.author.avatarURL())
-                ).then(msg => { msg.delete({ timeout: 7000 }) }).catch(console.error);
+                message.channel.send({
+                    content: `<@${message.author.id}>,`, embeds: [
+                        new MessageEmbed()
+                        .setColor('RED')
+                        .setTitle('Error')
+                        .setDescription('Invalid game link.')
+                        .setTimestamp()
+                        .setFooter(`${message.member.displayName} (${message.author.tag})`, message.author.avatarURL())
+                    ]
+                }).then(msg => { msg.delete({ timeout: 7000 }) }).catch(console.error);
             }
         } else if (link.indexOf('https://krunker.io/?party=') == 0 && link.split('=')[1].length == 6) {
             eb.setColor('BLACK')
-            message.channel.send(`<@${message.author.id}>,`, eb).then(msg => { msg.delete({ timeout: 300000 }) }).catch(console.error);
+            message.channel.send({ content: `<@${message.author.id}>,`, embeds: [eb] }).then(msg => { msg.delete({ timeout: 300000 }) }).catch(console.error);
             autodel(message);
         } else {
             error(message)
@@ -70,12 +73,16 @@ module.exports.run = async(client, message) => {
 }
 
 function error(message) {
-    message.channel.send(`<@${message.author.id}>,`, new MessageEmbed()
-        .setColor('RED')
-        .setTitle('Error')
-        .setDescription('Misuse of <#688434522072809500>. Please only send game links with an optional description afterwards.')
-        .setTimestamp()
-        .setFooter(`${message.member.displayName} (${message.author.tag})`, message.author.avatarURL())
+    message.channel.send({
+        content: `<@${message.author.id}>,`, embeds: [
+            new MessageEmbed()
+            .setColor('RED')
+            .setTitle('Error')
+            .setDescription('Misuse of <#688434522072809500>. Please only send game links with an optional description afterwards.')
+            .setTimestamp()
+            .setFooter(`${message.member.displayName} (${message.author.tag})`, message.author.avatarURL())
+        ]
+    }
     ).then(msg => { msg.delete({ timeout: 7000 }) }).catch(console.error);
 }
 

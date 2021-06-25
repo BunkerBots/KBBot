@@ -4,9 +4,7 @@ const config = require('../config.json'),
     logger = require('../logger'),
     // Access IDs
     roles = require('../app').staffRoles,
-    users = [
-        id.users.jj,
-    ],
+    users = [id.users.jj],
     advisors = [id.users.ks];
 
 module.exports.run = (client, message) => {
@@ -28,7 +26,7 @@ module.exports.run = (client, message) => {
 // Mini Mod Functions
 function helpCmd(message) {
     const args = message.content.split(' ');
-    if (args[1] == '-user' && users.includes(message.author.id)) message.author.createDM().then(m => m.send(new MessageEmbed()
+    if (args[1] == '-user' && users.includes(message.author.id)) message.author.createDM().then(m => m.sendEmbed(new MessageEmbed()
         .setTitle('Krunker Bunker Bot Help Guide - Users')
         .setColor('ORANGE')
         .addField(`\`${config.prefix}trade [optional id]\``, 'Remind kids where to trade items and where to get trade advice.')
@@ -37,7 +35,7 @@ function helpCmd(message) {
         .addField(`\`${config.prefix}advisors\``, 'Remind kids of who the current advisors are.')
         .setFooter('Krunker Bunker Bot • Designed by JJ_G4M3R and Jytesh')
         .setTimestamp()));
-    else if (args[1] == '-advisor' && advisors.includes(message.author.id)) message.author.createDM().then(m => m.send(new MessageEmbed()
+    else if (args[1] == '-advisor' && advisors.includes(message.author.id)) message.author.createDM().then(m => m.sendEmbed(new MessageEmbed()
         .setTitle('Krunker Bunker Bot Help Guide - Advisors')
         .setColor('RED')
         .addField(`\`${config.prefix}advisors\``, 'Remind kids of who the current advisors are.')
@@ -79,7 +77,7 @@ function advisorsCmd(message) {
         .addField('Current Advisors:', advisorsInString)
         .setFooter('Krunker Bunker Bot • Designed by JJ_G4M3R and Jytesh')
         .setTimestamp();
-    message.channel.send(eb);
+    message.channel.sendEmbed(eb);
 }
 
 function advise(client, message) {
@@ -103,7 +101,7 @@ function stonks(client, message) {
 function miniModBase(message, str) {
     var canAccess = users.includes(message.author.id); // Checks if author is in the access list
     if (!canAccess) roles.forEach(role => { if (message.member.roles.cache.has(role)) canAccess = true; return }); // If author is not in access list, checks if roles they have are.
-    if (canAccess) message.channel.send(`${message.content.split(' ').length > 1 ? `<@${message.content.split(' ')[1]}> ` : ''}${str}`);
+    if (canAccess) message.channel.send(`${message.content.split(' ').length > 1 ? `<@${message.content.split(' ')[1]}> ` : undefined}${str}`);
     logger.messageDeleted(message, 'Market command', 'PURPLE');
 }
 

@@ -25,7 +25,7 @@ module.exports.run = (client, message) => {
     } else {
         eb.addField(time + 'ms')
     }
-    message.channel.send(eb)
+    message.channel.sendEmbed(eb)
 }
 
 module.exports.config = {

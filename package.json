@@ -8,10 +8,9 @@
         "start": "node --max_old_space_size=4096 app.js dev"
     },
     "author": "JJ_G4M3R & Jytesh",
-    "license": "GPLv3",
+    "license": "GPL-3.0",
     "dependencies": {
-        "discord-buttons": "^3.2.1",
-        "discord.js": "^12.5.3",
+        "discord.js": "^13.0.0-dev.5af2ef5fbc7ad11281f38384c360ae79efe63b39",
         "dotenv": "^8",
         "mongodb": "^3.5.9",
         "node-fetch": "^2.6.0",

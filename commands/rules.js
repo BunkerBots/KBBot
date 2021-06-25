@@ -20,13 +20,14 @@ module.exports.run = (client, message) => {
         mention = args.length > 2 && args[2].match(/<?@?!?(\d{17,19})>?/) ? args[2].replace('<@', '').replace('!', '').replace('>', '') : null;
     if (!(rNum > 0 && rNum < 11)) return;
 
-    message.channel.send(mention != null ? `<@${mention}>,` : '', {
-        embed: new MessageEmbed()
-            .setTitle(`__**Rule ${rNum}**__ - **${rules[rNum][0]}**`)
-            .setColor('#ffd1dc')
-            .setDescription(`${rules[rNum][1]}`)
-            .setTimestamp()
-    });
+    message.channel.send({ content: mention != null ? `<@${mention}>,` : undefined,
+        embeds: [
+            new MessageEmbed()
+                .setTitle(`__**Rule ${rNum}**__ - **${rules[rNum][0]}**`)
+                .setColor('#ffd1dc')
+                .setDescription(`${rules[rNum][1]}`)
+                .setTimestamp()
+        ]});
 
     if (rNum == 8 && mention != null) message.guild.members.resolve(mention).setNickname('Rule 8');
 }

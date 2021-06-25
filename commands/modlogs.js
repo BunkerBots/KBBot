@@ -5,11 +5,15 @@ const
 module.exports.run = async(client, message) => {
     const fetchUser = await db.get(message.content.replace('<@!', '').replace('>', '').split(' ')[1]);
     if (fetchUser) {
-        message.reply(new MessageEmbed()
-            .setTitle('Modlogs for ' + fetchUser.username)
-            .setColor('BLURPLE')
-            .setDescription('Submissions: ' + fetchUser.submissions)
-            .setTimestamp());
+        message.reply({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle('Modlogs for ' + fetchUser.username)
+                    .setColor('BLURPLE')
+                    .setDescription('Submissions: ' + fetchUser.submissions)
+                    .setTimestamp()
+            ]
+        });
     } else {
         message.reply(new MessageEmbed()
             .setTitle('ERROR')
