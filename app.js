@@ -33,7 +33,8 @@ const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
             id.roles.yendis, 
             id.roles.cm, 
             id.roles.mod, 
-            id.roles.tmod],
+            id.roles.tmod
+        ],
         mee6Roles = [
             id.roles.beginner, 
             id.roles.novice, 
@@ -210,6 +211,7 @@ client.on('message', async(message) => {
             // Staff Commands
             if (message.content.startsWith(`${config.prefix}staff`)) {
                 let isStaff = false;
+                // eslint-disable-next-line no-return-assign
                 this.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
                 if (isStaff) {
                     message.content = message.content.substring(message.content.indexOf(' ') + 1);
@@ -230,6 +232,7 @@ client.on('message', async(message) => {
             // Market Commands
             if (message.content.startsWith(`${config.prefix}mkt`)) {
                 let isMkt = false;
+                // eslint-disable-next-line no-return-assign
                 this.roles.mkt.forEach(role => { if (message.member.roles.cache.has(role)) return isMkt = true; });
                 if (isMkt) {
                     message.content = message.content.substring(message.content.indexOf(' ') + 1);
