@@ -1,4 +1,4 @@
-const id = require('../id.json'),
+const id = require('../../id.json'),
     { MessageEmbed } = require("discord.js");
 
 module.exports.run = (client, message) => {

@@ -1,4 +1,4 @@
-const logger = require('../logger');
+const logger = require('../../logger');
 
 const roles = [
     '692870902005629041', //Trial Mod

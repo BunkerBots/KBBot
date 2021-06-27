@@ -1,10 +1,10 @@
 const { MessageEmbed, MessageAttachment, TextChannel } = require('discord.js'),
 
-    id =        require('../id.json'),
-    logger =    require('../logger'),
+    id =        require('../../id.json'),
+    logger =    require('../../logger'),
 
-    moderator_db =      require('../app').db.moderator,
-    submissions_db =    require('../app').db.submissions,
+    moderator_db =      require('../../app').db.moderator,
+    submissions_db =    require('../../app').db.submissions,
     
     roles =         [id.roles.dev, id.roles.yendis, id.roles.cm],
     bypassList =    [id.users.jytesh, id.users.jj],

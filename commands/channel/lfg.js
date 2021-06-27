@@ -1,5 +1,5 @@
 const { MessageEmbed } = require("discord.js"),
-    logger = require('../logger'),
+    logger = require('../../logger'),
     fetch = require("node-fetch");
 
 const regions = {
