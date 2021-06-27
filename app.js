@@ -53,17 +53,18 @@ const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
 Discord.TextChannel.prototype.sendEmbed = function sendEmbed(embed) {
     return this.send({ embeds: [embed] });
 }
-Object.keys(db).forEach(async t => await db[t].connect().catch(console.error)); 
+Object.keys(db).forEach(async t => await db[t].connect().catch(console.error));
+
+client.roles = {
+    staff: staffRoles,
+    mee6: mee6Roles,
+    link: linkRoles,
+    mkt: mktRoles,
+};
 
 module.exports = {
     client: client,
     db: db,
-    roles: {
-        staff: staffRoles,
-        mee6: mee6Roles,
-        link: linkRoles,
-        mkt: mktRoles,
-    },
 }
 
 // Load in commands
@@ -145,14 +146,39 @@ client.on('ready', async() => {
 });
 
 client.on('message', async(message) => {
+    if (message.author.bot || !message.guild) return; // Ignore bots and DMs
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
 
+    var cmdToRun = '';
+
+    // Staff Commands
+    if (message.content.startsWith(`${config.prefix}staff`)) {
+        let isStaff = false;
+        // eslint-disable-next-line no-return-assign
+        client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
+        if (isStaff) {
+            message.content = message.content.substring(message.content.indexOf(' ') + 1);
+            switch(message.content.split(' ')[0]) {
+                case 'rule':
+                    cmdToRun = 'rules';
+                    break;
+                case 'emails':
+                    cmdToRun = 'emails';
+                    break;
+                case 'roles':
+                    cmdToRun = 'roles';
+                    break;
+            }
+        }
+    }
+
+    if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
+
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
             if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
-            if (message.author.bot || !message.guild) return; // Ignore bots and DMs
 
             var cmdToRun = '';
             
@@ -202,7 +228,7 @@ client.on('message', async(message) => {
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
                         var canBypass = false;
-                        this.roles.link.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+                        client.roles.link.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                         if (!canBypass) logger.messageDeleted(message, 'Member Link', 'BLURPLE');
                     }
                     break;
@@ -212,7 +238,7 @@ client.on('message', async(message) => {
             if (message.content.startsWith(`${config.prefix}staff`)) {
                 let isStaff = false;
                 // eslint-disable-next-line no-return-assign
-                this.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
+                client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
                 if (isStaff) {
                     message.content = message.content.substring(message.content.indexOf(' ') + 1);
                     switch(message.content.split(' ')[0]) {
@@ -233,7 +259,7 @@ client.on('message', async(message) => {
             if (message.content.startsWith(`${config.prefix}mkt`)) {
                 let isMkt = false;
                 // eslint-disable-next-line no-return-assign
-                this.roles.mkt.forEach(role => { if (message.member.roles.cache.has(role)) return isMkt = true; });
+                client.roles.mkt.forEach(role => { if (message.member.roles.cache.has(role)) return isMkt = true; });
                 if (isMkt) {
                     message.content = message.content.substring(message.content.indexOf(' ') + 1);
                     switch(message.content.split(' ')[0]) {

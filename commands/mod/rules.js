@@ -25,7 +25,7 @@ module.exports.run = (client, message) => {
         embeds: [
             new MessageEmbed()
                 .setTitle(`__**Rule ${rNum == 679 ? 679 : rNum}**__ - **${rules[rNum == 679 ? 0 : rNum][0]}**`)
-                .setColor('#ffd1dc')
+                .setColor('BLUE')
                 .setDescription(`${rules[rNum == 679 ? 0 : rNum][1]}`)
                 .setTimestamp()
         ],

@@ -2,4 +2,3 @@ node_modules/
 .env
 deprecated/
 test.js
-package-lock.json

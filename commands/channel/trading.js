@@ -1,11 +1,12 @@
 const logger = require('../../logger'),
-    roles = require('../../app').roles.staff,
-    socials = ['https://krunker.io/social.html?p=profile&q=', 'https://kr.social/p/'];
-
+    socials = [
+        'https://krunker.io/social.html?p=profile&q=', 
+        'https://kr.social/p/'
+    ];
 
 module.exports.run = (client, message) => {
     var canBypass = false;
-    roles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+    client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
     if (!canBypass) {
         let rulesBroken = `<@${message.author.id}> Your message was deleted for breaking the following rule(s):`;
         if (socials.every(social => message.content.indexOf(social) < 0)) rulesBroken += `\n> All trades require a link to your account. Approved domains: \n> ► ${socials.join('\n> ► ')}`;
