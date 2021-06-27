@@ -1,7 +1,7 @@
-const id = require('../id.json'),
+const id = require('../../id.json'),
     { MessageEmbed } = require('discord.js'),
-    logger = require('../logger'),
-    roles = require('../app').staffRoles,
+    logger = require('../../logger'),
+    roles = require('../../app').roles.staff,
     rules = {
         social: 'Reports must include their **social profile link**. Acceptable urls: \n - https://kr.social/p/ \n - https://krunker.io/social.html?p=profile&q=',
         video: 'Reports must include a **YouTube** video, a **Streamable** video, a **Loom** video, or a **Twitch** clip when submitting a report. We will only accept video evidence from those platforms. \n - Reports with videos uploaded to any other video sharing platform will be deleted. \n - If your video or clip is deleted and is unavailable in the future, users that you reported may be unflagged.',

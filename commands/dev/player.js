@@ -1,5 +1,5 @@
-const id = require("../id.json"),
-    config = require('../config.json');
+const id = require("../../id.json"),
+    config = require('../../config.json');
 
 module.exports.run = async(client, message) => {
     const KU = await client.channels.fetch(id.channels.ku)

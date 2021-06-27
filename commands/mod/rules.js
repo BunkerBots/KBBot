@@ -1,7 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 
 const rules = [
-    ['', ''],
+    ['*Le Capt*', 'Don\'t ping members by accident and get temporarily demoted.'],
     ['No harassment, impersonation, hate speech, or toxic behaviour.', 'Do not spread toxicity or bully other members. Racism, sexism, homophobia, and harassment will not be tolerated in DMs or in this server.'],
     ['Do not spam.', 'Posting large copypastas or joining in with chains will be counted as spam. We do not allow epileptic/flashing content. Do not play loud noises and use voice changers in VCs.'],
     ['NSFW content, and suspicious activities.', 'Do not post NSFW content such as nudity or gore, and do not engage in discussion about sexual or disturbing topics.'],
@@ -18,16 +18,18 @@ module.exports.run = (client, message) => {
     const args = message.content.split(' '),
         rNum = args[1],
         mention = args.length > 2 && args[2].match(/<?@?!?(\d{17,19})>?/) ? args[2].replace('<@', '').replace('!', '').replace('>', '') : null;
-    if (!(rNum > 0 && rNum < 11)) return;
+    if (!(rNum > 0 && rNum < 11) && rNum != 679) return;
 
-    message.channel.send({ content: mention != null ? `<@${mention}>,` : undefined,
+    message.channel.send({ 
+        content: mention != null ? `<@${mention}>,` : undefined,
         embeds: [
             new MessageEmbed()
-                .setTitle(`__**Rule ${rNum}**__ - **${rules[rNum][0]}**`)
+                .setTitle(`__**Rule ${rNum == 679 ? 679 : rNum}**__ - **${rules[rNum == 679 ? 0 : rNum][0]}**`)
                 .setColor('#ffd1dc')
-                .setDescription(`${rules[rNum][1]}`)
+                .setDescription(`${rules[rNum == 679 ? 0 : rNum][1]}`)
                 .setTimestamp()
-        ]});
+        ],
+    });
 
     if (rNum == 8 && mention != null) message.guild.members.resolve(mention).setNickname('Rule 8');
 }

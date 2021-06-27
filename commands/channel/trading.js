@@ -1,5 +1,5 @@
-const logger = require('../logger'),
-    roles = require('../app').staffRoles,
+const logger = require('../../logger'),
+    roles = require('../../app').roles.staff,
     socials = ['https://krunker.io/social.html?p=profile&q=', 'https://kr.social/p/'];
 
 

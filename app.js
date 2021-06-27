@@ -1,20 +1,23 @@
 require('dotenv').config();
-const env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD';
 
 // Load Dependencies
-const   Discord =   require('discord.js'),
+const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
+
+        config =        require('./config.json'),
+        fs =            require('fs'),
+        id =            require('./id.json'),
+        { inspect } =   require('util'),
+        logger =        require('./logger'),
+
+        Discord =   require('discord.js'),
         client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'], intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS'] }),
-        config =            require('./config.json'),
-        fs =                require('fs'),
-        id =                require('./id.json'),
-        { inspect } =       require('util'),
-        logger =            require('./logger'),
+
         Mongo = require('./mongo.js'),
         db = {
             submissions:    new Mongo(process.env.DB_URL, { db: 'serverConfigs', coll: 'submissions', init: true }),
             moderator:      new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
         },
-        
+
         Twit = require('twit'),
         twit = new Twit({
             consumer_key:         process.env.TWITTER_CONSUMER_KEY,
@@ -24,9 +27,27 @@ const   Discord =   require('discord.js'),
             timeout_ms:           60*1000, // optional HTTP request timeout to apply to all requests.
             strictSSL:            true, // optional - requires SSL certificates to be valid. 
         }),
-        
-        staffRoles =    [id.roles.dev, id.roles.yendis, id.roles.cm, id.roles.mod, id.roles.tmod],
-        linkRoles =   staffRoles.concat([id.roles.beginner, id.roles.novice, id.roles.active, id.roles.apprentice, id.roles.devoted, id.roles.legendary, id.roles.mythical, id.roles.nolife, id.roles.godly, id.roles.ascended]);
+
+        staffRoles = [
+            id.roles.dev, 
+            id.roles.yendis, 
+            id.roles.cm, 
+            id.roles.mod, 
+            id.roles.tmod],
+        mee6Roles = [
+            id.roles.beginner, 
+            id.roles.novice, 
+            id.roles.active, 
+            id.roles.apprentice, 
+            id.roles.devoted, 
+            id.roles.legendary, 
+            id.roles.mythical, 
+            id.roles.nolife, 
+            id.roles.godly, 
+            id.roles.ascended
+        ],
+        linkRoles = staffRoles.concat(mee6Roles),
+        mktRoles =  staffRoles.concat([id.roles.advisor]);
 
 Discord.TextChannel.prototype.sendEmbed = function sendEmbed(embed) {
     return this.send({ embeds: [embed] });
@@ -36,16 +57,26 @@ Object.keys(db).forEach(async t => await db[t].connect().catch(console.error));
 module.exports = {
     client: client,
     db: db,
-    staffRoles: staffRoles,
+    roles: {
+        staff: staffRoles,
+        mee6: mee6Roles,
+        link: linkRoles,
+        mkt: mktRoles,
+    },
 }
 
 // Load in commands
 client.commands = new Discord.Collection();
-const cmdFiles  = fs.readdirSync('./commands/').filter(f => f.includes('.js'));
-if (cmdFiles.length < 1) return console.info('[KB Bot] There aren\'t any commands'); // JJ has fucked up
-else for (const cmdFile of cmdFiles) {
-    const pull = require(`./commands/${cmdFile}`)
-    client.commands.set(pull.config.name, pull);
+const folders = fs.readdirSync(require('path').join(__dirname, 'commands'));
+for (const folder of folders) {
+    const dir = require('path').join(__dirname, 'commands', folder);
+    if(fs.lstatSync(dir).isDirectory()) {
+        const cmdFiles  = fs.readdirSync(dir).filter(f => f.includes('.js'));
+        for (const cmdFile of cmdFiles) {
+            const pull = require(require('path').join(__dirname, 'commands', folder, cmdFile));
+            client.commands.set(pull.config.name, pull);
+        }
+    }
 }
 
 // Load in buttons
@@ -130,20 +161,17 @@ client.on('message', async(message) => {
                     cmdToRun = 'lfg';
                     break;
                 case id.channels["bunker-bot-commands"] || id.channels["dev"]:
-                    switch (message.content.split(' ')[0]) {
-                        case `${config.prefix}info`:
+                    switch (message.content.split(' ')[0].substring(config.prefix.length)) {
+                        case `info`:
                             cmdToRun = 'info';
                             break;
-                        case `${config.prefix}lfg`:
-                            cmdToRun = 'lfg';
-                            break;
-                        case `${config.prefix}modlogs`:
+                        case `modlogs`:
                             cmdToRun = 'modlogs';
                             break;
-                        case `${config.prefix}p`:
+                        case `p`:
                             cmdToRun = 'player';
                             break;
-                        case `${config.prefix}socials`:
+                        case `socials`:
                             if (message.member.roles.cache.has(id.roles.socials)) cmdToRun = 'socials';
                             break;
                     }
@@ -152,7 +180,14 @@ client.on('message', async(message) => {
                     cmdToRun = 'trading';
                     break;
                 case id.channels["market-chat"]:
-                    cmdToRun = 'market';
+                    switch (message.content.split(' ')[0].substring(config.prefix.length)) {
+                        case `advisors`:
+                            cmdToRun = 'advisors';
+                            break;
+                        case `stonks`:
+                            cmdToRun = 'stonks';
+                            break;
+                    }
                     break;
                 case id.channels["krunker-art"]:
                     cmdToRun = 'art';
@@ -163,20 +198,19 @@ client.on('message', async(message) => {
                 case id.channels["submissions"]:
                     cmdToRun = 'modmail';
                     break;
-                case id.channels['game-discussion']:
                 case id.channels["random-chat"]:
                     if (message.content.includes('http')) {
                         var canBypass = false;
-                        linkRoles.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+                        this.roles.link.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
                         if (!canBypass) logger.messageDeleted(message, 'Member Link', 'BLURPLE');
                     }
                     break;
             }
 
             // Staff Commands
-            if(message.content.startsWith(`${config.prefix}staff`)) {
+            if (message.content.startsWith(`${config.prefix}staff`)) {
                 let isStaff = false;
-                staffRoles.forEach(role => { if (message.member.roles.cache.has(role)) isStaff = true; return; });
+                this.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
                 if (isStaff) {
                     message.content = message.content.substring(message.content.indexOf(' ') + 1);
                     switch(message.content.split(' ')[0]) {
@@ -188,6 +222,20 @@ client.on('message', async(message) => {
                             break;
                         case 'roles':
                             cmdToRun = 'roles';
+                            break;
+                    }
+                }
+            }
+
+            // Market Commands
+            if (message.content.startsWith(`${config.prefix}mkt`)) {
+                let isMkt = false;
+                this.roles.mkt.forEach(role => { if (message.member.roles.cache.has(role)) return isMkt = true; });
+                if (isMkt) {
+                    message.content = message.content.substring(message.content.indexOf(' ') + 1);
+                    switch(message.content.split(' ')[0]) {
+                        case 'rule':
+                            cmdToRun = 'mktRules';
                             break;
                     }
                 }

@@ -1,10 +1,10 @@
 const { MessageEmbed, MessageAttachment, TextChannel } = require('discord.js'),
 
-    id =        require('../id.json'),
-    logger =    require('../logger'),
+    id =        require('../../id.json'),
+    logger =    require('../../logger'),
 
-    moderator_db =      require('../app').db.moderator,
-    submissions_db =    require('../app').db.submissions,
+    moderator_db =      require('../../app').db.moderator,
+    submissions_db =    require('../../app').db.submissions,
     
     roles =         [id.roles.dev, id.roles.yendis, id.roles.cm],
     bypassList =    [id.users.jytesh, id.users.jj],
@@ -45,9 +45,11 @@ module.exports.run = async(client, message) => {
             if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
         }
     } else if (message.content.toUpperCase().startsWith('CLIP')) {
+        const content = message.content.substring('Clip:'.length);
+        console.log(content)
         if (videos.every(domain => !message.content.includes(domain))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
         else embed.setTitle('Clips of the week submission request')
-            .setDescription(message.content.substring('Clip:'.length).trim());
+            .setURL(content.split(' ')[0]).setDescription(content);
     } else if (message.content.toUpperCase().includes('CSS')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
         else if (message.attachments.size > 2) denyReasons = '► **Too many attachments** \n';
@@ -233,8 +235,12 @@ function autoDeny(message, denyReasons) {
 
 async function approvalRequest(client, message, embed, files) {
     if (embed.image) embed = await proxyEmbedImage(client, embed);
-    if (embed.description.includes('https://')) embed = AttachEmbedImages(embed);
-    if (files.length > 0) files = await proxyFiles(client, files);
+    if (embed.description.includes('https://')) {
+        const [tempEmbed, links] = AttachEmbedImages(embed)
+        files.push(links);
+        embed = tempEmbed;
+    }
+    if (files.length > 0) files.push(...await proxyFiles(client, files));
     message.channel.send({
         content: `<@${message.author.id}>,`,
         embeds: [
@@ -381,7 +387,7 @@ function AttachEmbedImages(embed) {
     embed.description.split(' ').forEach(t => {
         if (t.includes('https://')) {
             t.split(/\r\n|\r|\n/g).forEach((temp, index, array) => {
-                if (temp.startsWith('https://') && !temp.includes('discord.gg/') && !temp.includes('krunker.io/')) {
+                if (temp.startsWith('https://') && !temp.includes('discord.gg/') && !temp.includes('krunker.io/') && videos.every(domain => !temp.includes(domain))) {
                     let endIndex = null;
                     if (temp.includes('.png')) endIndex = temp.indexOf('.png') + 4;
                     else if (temp.includes('.gif')) endIndex = temp.indexOf('.gif') + 4;
@@ -395,8 +401,7 @@ function AttachEmbedImages(embed) {
         } else description.push(t)
     });
     if (description.length > 0) embed.description = description.join(' ');
-    if (links.length > 0) embed.attachFiles(links)
-    return embed;
+    return [embed,links];
 }
 
 function undo(member, user, embed) {

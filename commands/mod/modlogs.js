@@ -1,6 +1,5 @@
-const
-    { MessageEmbed } = require("discord.js"),
-    db = require('../app').db.moderator;
+const { MessageEmbed } = require("discord.js"),
+    db = require('../../app').db.moderator;
 
 module.exports.run = async(client, message) => {
     const fetchUser = await db.get(message.content.replace('<@!', '').replace('>', '').split(' ')[1]);
