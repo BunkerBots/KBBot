@@ -1,4 +1,5 @@
-const logger = require('../../logger');
+const logger = require('../../logger'),
+    id = require("../../id.json"),;
 
 module.exports.run = (client, message) => {
     if (message.attachments.size == 0) { // Checks if message lacks an attachment
