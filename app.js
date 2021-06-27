@@ -225,7 +225,7 @@ async function evald(message) {
         let evaled = await eval(script);
         if (typeof evaled !== 'string') evaled = inspect(evaled);
         console.info(clean(evaled));
-        message.channel.send(clean(evaled), { code: 'xl' });
+        message.channel.send({content: clean(evaled), code: 'xl' });
     } catch (e) {
         message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(inspect(e))}\n\`\`\``);
     }
