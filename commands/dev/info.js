@@ -10,7 +10,7 @@ module.exports.run = (client, message) => {
         .addField('Ping:', `${client.ws.ping}ms`, true)
         .addField('Uptime:', `${new Date(client.uptime).toISOString().slice(11, -1)}`)
         .setTimestamp()
-        .setFooter('KrunkerLFG • Coming to get you')).then(m => message.channel.send("hi"));
+        .setFooter('KrunkerLFG • Coming to get you'));
 }
 
 module.exports.config = {
