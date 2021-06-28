@@ -1,3 +1,5 @@
+const delay = require('delay');
+
 const { MessageEmbed, MessageAttachment, TextChannel } = require('discord.js'),
 
     id =        require('../../id.json'),
@@ -110,7 +112,7 @@ module.exports.run = async(client, message) => {
                     .setColor('RED')
                     .setDescription('Invalid input. Please read the pinned message on how to use this channel.')
             ]
-        }).then(m => { m.delete({ timeout: 30000 }) });
+        }).then(m => { delay(30000).then(() => m.delete()) });
         return logger.messageDeleted(message, 'Modmail', 'NAVY');
     }
 
@@ -150,7 +152,7 @@ module.exports.react = async (client, reaction, user) => {
                 time: 60000,
                 errors: ['time'],
             }).catch(() => {
-                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
+                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => delay(7000).then(() => m.delete()));
                 reasonMessage.delete();
                 return reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
             });
@@ -166,7 +168,7 @@ module.exports.react = async (client, reaction, user) => {
                 time: 60000,
                 errors: ['time'],
             }).catch(() => {
-                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => m.delete({ timeout: 7000 }));
+                reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => delay(7000).then(() => m.delete()));
                 editedMessage.delete();
                 return reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
             });
@@ -230,7 +232,7 @@ function autoDeny(message, denyReasons) {
                 .setDescription(denyReasons)
         ]
     }
-    ).then(m => { m.delete({ timeout: 60000 }) });
+    ).then(m => { delay(60000).then(() => m.delete()) });
 }
 
 async function approvalRequest(client, message, embed, files) {
@@ -250,7 +252,7 @@ async function approvalRequest(client, message, embed, files) {
                 .setDescription('To receive updates about your submission, please ensure that you do not have me blocked. Check your DMs with me for your submission ID.')
                 .setTimestamp()
         ]
-    }).then(m => { m.delete({ timeout: 30000 }) });
+    }).then(m => { delay(30000).then(() => m.delete()) });
     message.author.createDM().then(dm => dm.send({
         embeds: [
             new MessageEmbed()

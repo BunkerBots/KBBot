@@ -1,10 +1,11 @@
+const delay = require('delay');
 const logger = require('../../logger'),
     id = require("../../id.json");
 
 module.exports.run = (client, message) => {
     if (message.attachments.size == 0) { // Checks if message lacks an attachment
         message.channel.send(`<@${message.author.id}>, please include **cropped** image displaying the trade in question.`).then(msg => { 
-            msg.delete({ timeout: 6000 });
+            delay(6000).then(() => msg.delete());
         }).catch(console.error);
         return logger.messageDeleted(message, 'Invalid use of stonks command', 'PURPLE');
     }

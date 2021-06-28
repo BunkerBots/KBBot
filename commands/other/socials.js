@@ -1,3 +1,4 @@
+const delay = require("delay");
 const id = require("../../id.json"),
     { MessageEmbed } = require("discord.js");
 
@@ -6,7 +7,7 @@ module.exports.run = async(client, message) => {
 
         const prompt = await message.channel.send(`<@${message.author.id}> Enable notif ping?`);
         const ping = await message.channel.awaitMessages(m => m.author.id == message.author.id, { max: 1, time: 60000, errors: ['time'] }).catch(() => {
-            message.channel.send(`<@${message.author.id}> Timeout. Reply faster next time you 4head.`).then(m => m.delete({ timeout: 7000 }));
+            message.channel.send(`<@${message.author.id}> Timeout. Reply faster next time you 4head.`).then(m => delay(7000).then(() => m.delete()));
             prompt.delete();
             return;
         });

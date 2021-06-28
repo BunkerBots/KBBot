@@ -1,3 +1,5 @@
+const delay = require('delay');
+
 const id = require('../../id.json'),
     { MessageEmbed } = require('discord.js'),
     logger = require('../../logger'),
@@ -35,7 +37,7 @@ module.exports.run = (client, message) => {
                         .setTimestamp()
                 ]
             }
-            ).then(msg => { msg.delete({ timeout: 90000 }) }).catch(console.error);
+            ).then(msg => { delay(90000).then(() => msg.delete()) }).catch(console.error);
             logger.messageDeleted(message, 'Hacker Report - Missing required info', 'RED');
         } else {
             message.channel.send({
@@ -48,7 +50,7 @@ module.exports.run = (client, message) => {
                         .setTimestamp()
                 ]
             }
-            ).then(msg => { msg.delete({ timeout: 20000 }) }).catch(console.error);
+            ).then(msg => { delay(20000).then(() => msg.delete()).catch(console.error); })
             client.channels.cache.get(id.channels["hacker-reports"]).sendEmbed(new MessageEmbed()
                 .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
                 .setColor('BLURPLE')

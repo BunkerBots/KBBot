@@ -1,5 +1,6 @@
 const { MessageEmbed } = require("discord.js"),
     logger = require('../../logger'),
+    delay = require('delay'),
     fetch = require("node-fetch");
 
 const regions = {
@@ -45,7 +46,7 @@ module.exports.run = async(client, message) => {
                     .addField('Map', game.map, true)
                     .addField('Game Mode', game.mode, true)
 
-                message.channel.send({ content: `<@${message.author.id}>,`, embeds: [eb] }).then(msg => { msg.delete({ timeout: 600000 }) }).catch(console.error);
+                message.channel.send({ content: `<@${message.author.id}>,`, embeds: [eb] }).then(msg => { delay(600000).then(() => msg.delete()) }).catch(console.error);
                 autodel(message);
             } else {
                 message.channel.send({
@@ -57,11 +58,11 @@ module.exports.run = async(client, message) => {
                         .setTimestamp()
                         .setFooter(`${message.member.displayName} (${message.author.tag})`, message.author.avatarURL())
                     ]
-                }).then(msg => { msg.delete({ timeout: 7000 }) }).catch(console.error);
+                }).then(msg => { delay(7000).then(() => msg.delete()) }).catch(console.error);
             }
         } else if (link.indexOf('https://krunker.io/?party=') == 0 && link.split('=')[1].length == 6) {
             eb.setColor('BLACK')
-            message.channel.send({ content: `<@${message.author.id}>,`, embeds: [eb] }).then(msg => { msg.delete({ timeout: 300000 }) }).catch(console.error);
+            message.channel.send({ content: `<@${message.author.id}>,`, embeds: [eb] }).then(msg => { delay(30000).then(() => msg.delete()) }).catch(console.error);
             autodel(message);
         } else {
             error(message)
@@ -83,7 +84,7 @@ function error(message) {
             .setFooter(`${message.member.displayName} (${message.author.tag})`, message.author.avatarURL())
         ]
     }
-    ).then(msg => { msg.delete({ timeout: 7000 }) }).catch(console.error);
+    ).then(msg => { delay(7000).then(() => msg.delete()) }).catch(console.error);
 }
 
 function autodel(message) {
