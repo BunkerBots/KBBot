@@ -1,11 +1,10 @@
-const delay = require('delay');
-
 require('dotenv').config();
 
 // Load Dependencies
 const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
 
         config =        require('./config.json'),
+        delay = require('delay'),
         fs =            require('fs'),
         id =            require('./id.json'),
         { inspect } =   require('util'),
@@ -38,7 +37,7 @@ const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
             id.roles.tmod
         ],
         mee6Roles = [
-            id.roles.beginner, 
+            id.roles.rookie, 
             id.roles.novice, 
             id.roles.active, 
             id.roles.apprentice, 
