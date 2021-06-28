@@ -146,6 +146,7 @@ client.on('ready', async() => {
 });
 
 client.on('message', async(message) => {
+    if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
     if (message.author.bot || !message.guild) return; // Ignore bots and DMs
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
@@ -153,7 +154,6 @@ client.on('message', async(message) => {
 
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
-            if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
 
             var cmdToRun = '';
             
