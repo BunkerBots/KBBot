@@ -239,7 +239,7 @@ async function approvalRequest(client, message, embed, files) {
     if (embed.image) embed = await proxyEmbedImage(client, embed);
     if (embed.description.includes('https://')) {
         const [tempEmbed, links] = AttachEmbedImages(embed)
-        files.push(links);
+        files.push(...links);
         embed = tempEmbed;
     }
     if (files.length > 0) files.push(...await proxyFiles(client, files));
