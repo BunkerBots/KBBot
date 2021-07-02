@@ -49,7 +49,21 @@ const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
             id.roles.ascended
         ],
         linkRoles = staffRoles.concat(mee6Roles),
-        mktRoles =  staffRoles.concat([id.roles.advisor]);
+        mktRoles =  staffRoles.concat([id.roles.advisor]),
+
+        inviteBanChannels = [
+            id.channels['general'],
+            id.channels['random-chat'],
+            id.channels['bot-comamnds'],
+            id.channels['international-chat'],
+            id.channels['krunker-translators'],
+            id.channels['vip-casino'],
+            id.channels['fun-bots'],
+            id.channels['game-discussion'],
+            id.channels['looking-for-game'],
+            id.channels['market-chat'],
+            id.channels['trading-board'],
+        ];
 
 Discord.TextChannel.prototype.sendEmbed = function sendEmbed(embed) {
     return this.send({ embeds: [embed] });
@@ -155,6 +169,8 @@ client.on('message', async(message) => {
 
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
+
+            if (message.activity != null && inviteBanChannels.includes(message.channel.id)) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
 
             var cmdToRun = '';
             
