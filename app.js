@@ -170,7 +170,11 @@ client.on('message', async(message) => {
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
 
-            if (message.activity != null && inviteBanChannels.includes(message.channel.id)) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
+            if (message.activity != null && inviteBanChannels.includes(message.channel.id)) {
+                var canSendInvite = false;
+                client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return canSendInvite = true; });
+                if (!canSendInvite) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
+            }
 
             var cmdToRun = '';
             
