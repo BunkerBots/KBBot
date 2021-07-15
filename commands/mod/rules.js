@@ -6,7 +6,7 @@ const rules = [
     ['Do not spam.', 'Posting large copypastas or joining in with chains will be counted as spam. We do not allow epileptic/flashing content. Do not play loud noises and use voice changers in VCs.'],
     ['NSFW content, and suspicious activities.', 'Do not post NSFW content such as nudity or gore, and do not engage in discussion about sexual or disturbing topics.'],
     ['Religious and political discussions.', 'Do not spread religious or political ideas no matter their intent. Being insensitive towards others and using religious words, phrases, or references as jokes is not allowed.'],
-    ['Use appropriate channels and do not advertise.', 'Do not DM people links to anything without consent. Do not advertise anything outside of the appropriate channels. #server-guide has information about the different channels.'],
+    ['Use appropriate channels and do not advertise.', 'Do not DM people links to anything without consent. Do not advertise anything outside of the appropriate channels. <#705074841488719904> has information about the different channels.'],
     ['Do not attempt to bypass punishments.', 'Do not attempt to bypass the filters in any way, this includes using spoiler tags to fake a banned word. Adding alt accounts to the server is not allowed.'],
     ['Hacks, cheats, and exploits.', 'Showcasing or using hacks, and joining servers that distribute hacks will result in a ban. Do not share any exploits in Krunker and do not joke about hacks.'],
     ['Use an appropriate nickname and avatar.', 'Your username must be 3 or more english letters and must comply with server rules. NSFW profile pictures are against server rules.'],

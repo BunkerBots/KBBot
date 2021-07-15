@@ -11,7 +11,11 @@ const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
         logger =        require('./logger'),
 
         Discord =   require('discord.js'),
-        client =    new Discord.Client({ fetchAllMembers: false, partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'], intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS'] }),
+        client =    new Discord.Client({ 
+            fetchAllMembers: false, 
+            partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'], 
+            intents: ['GUILDS', 'GUILD_MEMBERS', 'GUILD_PRESENCES', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS'] 
+        }),
 
         Mongo = require('./mongo.js'),
         db = {
@@ -164,6 +168,26 @@ client.on('message', async(message) => {
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
+
+    var cmdToRun = '';
+
+    // Staff Commands
+    if (message.content.startsWith(`${config.prefix}staff`)) {
+        if (message.author.id == id.users.jj) {
+            message.content = message.content.substring(message.content.indexOf(' ') + 1);
+            switch(message.content.split(' ')[0]) {
+                case 'email':
+                case 'emails':
+                    cmdToRun = 'emails';
+                    break;
+            }
+        }
+    }
+
+    // Run Command
+    if (cmdToRun != '') {
+        client.commands.get(`${cmdToRun}`).run(client, message);
+    }
 
     client.setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
