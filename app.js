@@ -196,6 +196,7 @@ client.on('message', async(message) => {
 
             if (message.activity != null && inviteBanChannels.includes(message.channel.id)) {
                 var canSendInvite = false;
+                // eslint-disable-next-line no-return-assign
                 client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return canSendInvite = true; });
                 if (!canSendInvite) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
             }
