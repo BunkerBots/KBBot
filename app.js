@@ -246,6 +246,7 @@ client.on('message', async(message) => {
                         case 'rule':
                             cmdToRun = 'rules';
                             break;
+                        case 'email':
                         case 'emails':
                             cmdToRun = 'emails';
                             break;
