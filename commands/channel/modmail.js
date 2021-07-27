@@ -29,7 +29,7 @@ const { MessageEmbed, MessageAttachment, TextChannel } = require('discord.js'),
     ];
 
 module.exports.run = async(client, message) => {
-    if (bypassList.includes(message.author.id) && message.member.nickname.includes('bypass')) return;
+    if (bypassList.includes(message.author.id) && message.member.nickname?.includes('bypass')) return;
     else roles.forEach(role => { if (message.member.roles.cache.has(role)) return; });
 
     var denyReasons = '';
@@ -48,7 +48,6 @@ module.exports.run = async(client, message) => {
         }
     } else if (message.content.toUpperCase().startsWith('CLIP')) {
         const content = message.content.substring('Clip:'.length);
-        console.log(content)
         if (videos.every(domain => !message.content.includes(domain))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
         else embed.setTitle('Clips of the week submission request')
             .setURL(content.split(' ')[0]).setDescription(content);
@@ -242,7 +241,7 @@ async function approvalRequest(client, message, embed, files) {
         files.push(...links);
         embed = tempEmbed;
     }
-    if (files.length > 0) files.push(...await proxyFiles(client, files));
+    if (files.length > 0) files = await proxyFiles(client, files);
     message.channel.send({
         content: `<@${message.author.id}>,`,
         embeds: [

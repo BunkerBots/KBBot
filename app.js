@@ -157,7 +157,6 @@ client.on('ready', async() => {
         const   twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577']}),
                 krunkerFeed =   await client.channels.fetch(id.channels["krunker-feed"]);
         twitterStream.on('tweet', (tweet) => {
-            console.info('TWITTER: ', tweet);
             if (tweet.user.screen_name != 'krunkerio' || tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
             krunkerFeed.send(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`).catch(console.error);
         });
