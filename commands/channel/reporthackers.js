@@ -55,7 +55,7 @@ module.exports.run = (client, message) => {
                 .setAuthor(`${message.author.tag} (${message.author.id})`, message.author.displayAvatarURL())
                 .setColor('BLURPLE')
                 .addField('► Content: ', message.content)
-                .setFooter('Asokra got salty so now his name is here :)')
+                .setFooter('Rush got salty so now his name is here :)')
                 .setTimestamp());
             logger.messageDeleted(message, 'Hacker Report - Report processed', 'GREEN');
         }

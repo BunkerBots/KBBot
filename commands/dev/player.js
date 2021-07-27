@@ -28,7 +28,7 @@ module.exports.run = async(client, message) => {
             if(!send){
                 send=1;
                 message.reply('Time out, Bot API is down!');
-            }
+        }
     }
 }
 
