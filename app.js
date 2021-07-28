@@ -54,6 +54,7 @@ const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
         ],
         linkRoles = staffRoles.concat(mee6Roles),
         mktRoles =  staffRoles.concat([id.roles.advisor]),
+        stickerRoles = staffRoles.concat(mee6Roles.slice(mee6Roles.indexOf(id.roles.novice))),
 
         inviteBanChannels = [
             id.channels['general'],
@@ -75,10 +76,11 @@ Discord.TextChannel.prototype.sendEmbed = function sendEmbed(embed) {
 Object.keys(db).forEach(async t => await db[t].connect().catch(console.error));
 
 client.roles = {
-    staff: staffRoles,
-    mee6: mee6Roles,
     link: linkRoles,
+    mee6: mee6Roles,
     mkt: mktRoles,
+    staff: staffRoles,
+    stickers: stickerRoles,
 };
 
 module.exports = {
@@ -86,27 +88,29 @@ module.exports = {
     db: db,
 }
 
-// Load in commands
-client.commands = new Discord.Collection();
-const folders = fs.readdirSync(require('path').join(__dirname, 'commands'));
-for (const folder of folders) {
-    const dir = require('path').join(__dirname, 'commands', folder);
-    if(fs.lstatSync(dir).isDirectory()) {
-        const cmdFiles  = fs.readdirSync(dir).filter(f => f.includes('.js'));
-        for (const cmdFile of cmdFiles) {
-            const pull = require(require('path').join(__dirname, 'commands', folder, cmdFile));
-            client.commands.set(pull.config.name, pull);
+{
+    // Load in commands
+    client.commands = new Discord.Collection();
+    const folders = fs.readdirSync(require('path').join(__dirname, 'commands'));
+    for (const folder of folders) {
+        const dir = require('path').join(__dirname, 'commands', folder);
+        if(fs.lstatSync(dir).isDirectory()) {
+            const cmdFiles  = fs.readdirSync(dir).filter(f => f.includes('.js'));
+            for (const cmdFile of cmdFiles) {
+                const pull = require(require('path').join(__dirname, 'commands', folder, cmdFile));
+                client.commands.set(pull.config.name, pull);
+            }
         }
     }
-}
-
-// Load in buttons
-client.buttons = new Discord.Collection();
-const btnFiles = fs.readdirSync('./buttons').filter(f => f.includes('.js'));
-if (btnFiles.length < 1) return console.info('[KB Bot] There aren\'t any buttons');
-else for (const btnFile of btnFiles) {
-    const pull = require(`./buttons/${btnFile}`);
-    client.buttons.set(btnFile.split('.')[0], pull);
+    
+    // Load in buttons
+    client.buttons = new Discord.Collection();
+    const btnFiles = fs.readdirSync('./buttons').filter(f => f.includes('.js'));
+    if (btnFiles.length < 1) console.info('[KB Bot] There aren\'t any buttons');
+    else for (const btnFile of btnFiles) {
+        const pull = require(`./buttons/${btnFile}`);
+        client.buttons.set(btnFile.split('.')[0], pull);
+    }
 }
 
 // Login
@@ -163,21 +167,27 @@ client.on('ready', async() => {
     }
 });
 
-client.on('message', async(message) => {
+client.on('messageCreate', async(message) => {
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
 
-    client.setTimeout(async() => {
+    setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
             if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
             if (message.author.bot || !message.guild) return; // Ignore bots and DMs
 
+            // Global Filters
             if (message.activity != null && inviteBanChannels.includes(message.channel.id)) {
                 var canSendInvite = false;
                 // eslint-disable-next-line no-return-assign
                 client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return canSendInvite = true; });
                 if (!canSendInvite) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
+            } else if (message.stickers && message.stickers.size != 0) {
+                var canSendSticker = false;
+                // eslint-disable-next-line no-return-assign
+                client.roles.stickers.forEach(role => { if (message.member.roles.cache.has(role)) return canSendSticker = true; });
+                if (!canSendSticker) return logger.messageDeleted(message, 'Sticker', 'BLURPLE');
             }
 
             var cmdToRun = '';
