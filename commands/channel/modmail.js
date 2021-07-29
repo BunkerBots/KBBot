@@ -122,7 +122,7 @@ module.exports.run = async(client, message) => {
         logger.messageDeleted(message, 'Modmail', 'NAVY');
     } else {
         autoDeny(message, denyReasons);
-        client.setTimeout(() => {
+        setTimeout(() => {
             logger.messageDeleted(message, 'Modmail', 'NAVY');
         }, 10000);
     }

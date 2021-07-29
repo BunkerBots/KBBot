@@ -299,7 +299,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
 client.on('interaction', async btn => {
     if (!btn.isButton()) return;
-    const buttonCmd = client.buttons.get(btn.customID.split('_')[0]);
+    const buttonCmd = client.buttons.get(btn.customId.split('_')[0]);
     if (env == 'PROD' && buttonCmd) {
         await buttonCmd(client, btn);
         if (!(btn.deferred === true || btn.replied === true)) return btn.reply({ content: 'Error. Please contact a bot dev.', ephemeral: true });

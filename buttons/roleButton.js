@@ -1,5 +1,5 @@
 module.exports = async(client, btn) => {
-    const roleID = btn.customID.split('_')[1];
+    const roleID = btn.customId.split('_')[1];
     if (!roleID) return client.emit('log',`No role found: ${roleID}`);
     const role = await btn.guild.roles.fetch(roleID);
 

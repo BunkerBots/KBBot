@@ -142,7 +142,7 @@ function getMapInfo(name) {
         };
         const res = await fetch(`https://api.krunker.io/search?type=map&val=${name}`, options);
         const json = await res.json().catch(error => { reject(new Error('JSON', error)) });
-        if (!json) reject(new Error('JSON', error));
+        if (!json) return reject(new Error('JSON', error));
         if (!json.error) {
             const map = json.data[0];
             if (!map) reject(new Error('Map Not Found', json))
