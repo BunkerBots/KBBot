@@ -122,7 +122,7 @@ module.exports.run = async(client, message) => {
         logger.messageDeleted(message, 'Modmail', 'NAVY');
     } else {
         autoDeny(message, denyReasons);
-        client.setTimeout(() => {
+        setTimeout(() => {
             logger.messageDeleted(message, 'Modmail', 'NAVY');
         }, 10000);
     }
@@ -146,7 +146,8 @@ module.exports.react = async (client, reaction, user) => {
         }
         case id.emojis.no: {
             const reasonMessage = await reaction.message.channel.send(`<@${user.id}> Please provide a reason:`);
-            const reasonMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { 
+            const reasonMessages = await reaction.message.channel.awaitMessages({
+                filter: m => m.author.id == user.id,
                 max: 1,
                 time: 60000,
                 errors: ['time'],
@@ -162,7 +163,8 @@ module.exports.react = async (client, reaction, user) => {
         }
         case id.emojis.script: {
             const editedMessage = await reaction.message.channel.send(`<@${user.id}> Please provide an edited version:`);
-            const editedMessages = await reaction.message.channel.awaitMessages(m => m.author.id == user.id, { 
+            const editedMessages = await reaction.message.channel.awaitMessages({
+                filter: m => m.author.id == user.id,
                 max: 1,
                 time: 60000,
                 errors: ['time'],
