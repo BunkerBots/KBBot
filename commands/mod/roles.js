@@ -15,7 +15,7 @@ module.exports.run = (client, message) => {
                 .setDescription(`Check your level by using the \`!rank\` command in <#${id.channels['bot-comamnds']}>`)
                 .addField('How it works:', 'Every minute that you\'re messaging, you randomly gain between 15 and 25 XP. \n\nTo avoid spamming, earning XP is limited to once a minute per user.')
                 .addField('Level 10:', `<@&${id.roles.rookie}> \n\`\`\`diff\n+ Media and link perms.\n\`\`\``, true)
-                .addField('Level 20:', `<@&${id.roles.novice}>`, true)
+                .addField('Level 20:', `<@&${id.roles.novice}> \n\`\`\`diff\n+ Sticker perms.\n\`\`\``, true)
                 .addField('Level 30:', `<@&${id.roles.active}> \n\`\`\`diff\n+ Streaming and video perms.\n\`\`\``, true)
                 .addField('Level 40:', `<@&${id.roles.apprentice}> \n\`\`\`diff\n+ Special channel and VC.\n\`\`\``, true)
                 .addField('Level 50:', `<@&${id.roles.devoted}> \n\`\`\`diff\n+ Reaction perms.\n\`\`\``, true)
