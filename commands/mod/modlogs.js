@@ -2,7 +2,7 @@ const { MessageEmbed } = require("discord.js"),
     db = require('../../app').db.moderator;
 
 module.exports.run = async(client, message) => {
-    const fetchUser = await db.get(message.content.replace('<@!', '').replace('>', '').split(' ')[1]);
+    const fetchUser = await db.get(message.content.replace('<@', '').replace('!', '').replace('>', '').split(' ')[1]);
     if (fetchUser) {
         message.reply({
             embeds: [
@@ -14,10 +14,14 @@ module.exports.run = async(client, message) => {
             ]
         });
     } else {
-        message.reply(new MessageEmbed()
-            .setTitle('ERROR')
-            .setDescription('No modlogs exists for specified user.')
-            .setTimestamp());
+        message.reply({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle('ERROR')
+                    .setDescription('No modlogs exists for specified user.')
+                    .setTimestamp()
+            ]
+        });
     }
 }
 
