@@ -11,9 +11,9 @@ const regions = {
     DAL: 'GOLD',
     FRA: 'ORANGE',
     MIA: 'GREY',
-    NY: 'DARKER_GREY',
+    NY:  'DARKER_GREY',
     SIN: 'NAVY',
-    SV: 'DARK_AQUA',
+    SV:  'DARK_AQUA',
     SYD: 'DARK_GREEN',
     TOK: 'DARK_BLUE',
 };
@@ -89,7 +89,7 @@ function error(message) {
 
 function autodel(message) {
     message.channel.messages.fetch({ limit: 100 }, false, true).then(messages => {
-        messages.array().forEach(m => {
+        [...messages.values()].forEach(m => {
             if (m.content.includes(message.author.id)) m.delete();
         });
     });
@@ -140,7 +140,7 @@ function getMapInfo(name) {
             },
             json: true, // Automatically parses the JSON string in the response
         };
-        const res = await fetch(`https://api.krunker.io/search?type=map&val=${name}`, options);
+        const res = await fetch(`https://api.krunker.io/webhooks/general/maps/search?val=${name}`, options);
         const json = await res.json().catch(error => { reject(new Error('JSON', error)) });
         if (!json) return reject(new Error('JSON', error));
         if (!json.error) {

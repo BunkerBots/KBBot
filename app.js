@@ -137,12 +137,12 @@ client.on('ready', async() => {
 
         // Deal with channels on start-up
         client.channels.resolve(id.channels["looking-for-game"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
-            messages.array().forEach(message => {
+            [...messages.values()].forEach(message => {
                 logger.messageDeleted(message, 'Bot reboot autodel', 'AQUA');
             });
         });
         client.channels.resolve(id.channels["report-hackers"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
-            messages.array().forEach(message => {
+            [...messages.values()].forEach(message => {
                 if (message.author.id == id.users.kbbot) delay(20000).then(() => message.delete());
                 else if (message.author.id != id.users.kb) client.commands.get('reporthackers').run(client, message);
             });

@@ -44,7 +44,7 @@ module.exports.run = async(client, message) => {
         else {
             embed.setTitle('Suggestions submission request')
                 .setDescription(message.content.substring(message.content.indexOf(' ') + 1));
-            if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
+            if (message.attachments.size != 0) embed.setImage([...message.attachments.values()][0].url);
         }
     } else if (message.content.toUpperCase().startsWith('CLIP')) {
         const content = message.content.substring('Clip:'.length);
@@ -55,11 +55,10 @@ module.exports.run = async(client, message) => {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
         else if (message.attachments.size > 2) denyReasons = '► **Too many attachments** \n';
         denyReasons += missingRequirements('community-css', message.content);
-        
         if (denyReasons == '') {
             embed.setTitle('Community CSS submission request')
                 .setDescription(message.content)
-            files = message.attachments.array()
+            files = [...message.attachments.values()];
         }
     } else if (message.content.toUpperCase().includes('CLAN NAME')) {
         denyReasons += missingRequirements('clan-board', message.content);
@@ -77,7 +76,7 @@ module.exports.run = async(client, message) => {
 
         if (denyReasons == '') embed.setTitle('Customizations submission request')
             .setDescription(message.content)
-            .setImage(message.attachments.array()[0].url);
+            .setImage([...message.attachments.values()][0].url);
     } else if (message.content.toUpperCase().includes('MAP NAME')) {
         if (message.attachments.size > 1) denyReasons = '► **Too many attachments** \n';
         denyReasons += missingRequirements('community-maps', message.content);
@@ -85,7 +84,7 @@ module.exports.run = async(client, message) => {
         if (denyReasons == '') {
             embed.setTitle('Community maps submission request')
                 .setDescription(message.content);
-            if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
+            if (message.attachments.size != 0) embed.setImage([...message.attachments.values()][0].url);
         }
     } else if (message.content.toUpperCase().includes('MOD NAME')) {
         if (message.attachments.size > 1) denyReasons = '► **Too many attachments** \n';
@@ -94,14 +93,14 @@ module.exports.run = async(client, message) => {
         if (denyReasons == '') {
             embed.setTitle('Community mods submission request')
                 .setDescription(message.content);
-            if (message.attachments.size != 0) embed.setImage(message.attachments.array()[0].url);
+            if (message.attachments.size != 0) embed.setImage([...message.attachments.values()][0].url);
         }
     } else if (message.content.toUpperCase().includes('SKIN NAME')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment**';
         else if (message.attachments.size > 1) denyReasons = '► **Too many attachments**';
         else embed.setTitle('Skin vote submission request')
             .setDescription(message.content)
-            .setImage(message.attachments.array()[0].url);
+            .setImage([...message.attachments.values()][0].url);
     } else {
         message.channel.send({
             content: `<@${message.author.id}>,`,
@@ -205,8 +204,8 @@ module.exports.react = async (client, reaction, user) => {
         }
     }
 
+    if (embed.hexColor == id.colours.BLACK) embed.setColor('YELLOW')
     reaction.message.edit({ embeds: [embed] });
-    if (embed.hexColor == id.colours.BLACK) reaction.message.edit({ embeds: [embed.setColor('YELLOW')]});
     if (reaction.message.embeds[0].hexColor != id.colours.YELLOW) reaction.message.unpin();
 
     //DB stuff
@@ -243,7 +242,7 @@ async function approvalRequest(client, message, embed, files) {
         files.push(...links);
         embed = tempEmbed;
     }
-    if (files.length > 0) files = await proxyFiles(client, files);
+    if (files.length > 0) files = [...(await proxyFiles(client, files))?.values()];
     message.channel.send({
         content: `<@${message.author.id}>,`,
         embeds: [
@@ -291,7 +290,7 @@ async function approveRequest(client, reaction, user, member, embed) {
         .setColor('GOLD')
         .setTimestamp();
     if (embed.image) post.setImage(embed.image.url);
-    if (reaction.message.attachments.size > 0) files = reaction.message.attachments.array();
+    if (reaction.message.attachments.size > 0) files = [...reaction.message.attachments.values()];
     let title = embed.title.split(' ');
     title.pop();
     switch (title.join(' ')) {
@@ -376,7 +375,7 @@ function denyRequest(member, user, reason, embed) {
 
 async function proxyEmbedImage(client, embed) {
     const proxy = await client.channels.resolve(id.channels["submissions-extra"]).send({ files: [new MessageAttachment(embed.image.url)] });
-    return embed.setImage(proxy.attachments.array()[0].url);
+    return embed.setImage([...proxy.attachments.values()][0].url);
 }
 
 async function proxyFiles(client, files) {
