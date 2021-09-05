@@ -174,7 +174,7 @@ client.on('messageCreate', async(message) => {
 
     setTimeout(async() => {
         if (env == 'PROD' && !message.deleted) {
-            if (message.type == 'PINS_ADD' && message.author.id == client.user.id) message.delete();
+            if (message.type == 'CHANNEL_PINNED_MESSAGE' && message.author.id == client.user.id) message.delete();
             if (message.author.bot || !message.guild) return; // Ignore bots and DMs
 
             // Global Filters

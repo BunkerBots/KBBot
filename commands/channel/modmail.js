@@ -444,7 +444,7 @@ function missingRequirements(category, content) {
 TextChannel.prototype.sendEmbedWithOptionalFile = function sendEmbedWithOptionalFile(embed, files) {
     if (files.length == 0) return this.sendEmbed(embed);
     else {
-        this.send({
+        return this.send({
             embeds: [embed],
             files
         })
