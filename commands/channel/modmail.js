@@ -153,8 +153,10 @@ module.exports.react = async (client, reaction, user) => {
             }).catch(() => {
                 reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => delay(7000).then(() => m.delete()));
                 reasonMessage.delete();
-                return reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
+                reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
+                return;
             });
+            if (!reasonMessages) return;
             embed = denyRequest(member, user, reasonMessages.first().content, embed);
             reasonMessage.delete();
             reasonMessages.first().delete();
@@ -170,8 +172,10 @@ module.exports.react = async (client, reaction, user) => {
             }).catch(() => {
                 reaction.message.channel.send(`<@${user.id}> Timeout. Please go react again.`).then(m => delay(7000).then(() => m.delete()));
                 editedMessage.delete();
-                return reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
+                reaction.message.edit({ embeds: [embed.setColor('YELLOW')] });
+                return;
             });
+            if (!editedMessages) return;
             embed.addField('Original', embed.description)
                 .setDescription(editedMessages.first().content);
             embed = await approveRequest(client, reaction, user, member, embed);

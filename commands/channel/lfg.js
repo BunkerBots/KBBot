@@ -145,7 +145,7 @@ function getMapInfo(name) {
         if (!json) return reject(new Error('JSON', error));
         if (!json.error) {
             const map = json.data[0];
-            if (!map) reject(new Error('Map Not Found', json))
+            if (!map) return reject(new Error('Map Not Found', json))
             resolve({
                 id: map.map_id,
                 name: map.map_name,

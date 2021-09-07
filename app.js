@@ -297,7 +297,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
     }
 });
 
-client.on('interaction', async btn => {
+client.on('interactionCreate', async btn => {
     if (!btn.isButton()) return;
     const buttonCmd = client.buttons.get(btn.customId.split('_')[0]);
     if (env == 'PROD' && buttonCmd) {
