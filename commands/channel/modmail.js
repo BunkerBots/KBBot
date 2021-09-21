@@ -133,7 +133,7 @@ module.exports.react = async (client, reaction, user) => {
     let embed = reaction.message.embeds[0];
     // eslint-disable-next-line no-extra-parens
     if (!embed || (embed.hexColor != id.colours["YELLOW"] && reaction.emoji.id != id.emojis.undo)) return;
-    reaction.message.edit({ embeds: [embed.setColor('BLACK')] }).catch(() => { console.error() });
+    await reaction.message.edit({ embeds: [embed.setColor('BLACK')] }).catch(() => { console.error() });
     const member = await client.users.fetch(embed.author.name.match(/\((\d{17,19})\)/)[1], true, true);
 
     switch (reaction.emoji.id) {
