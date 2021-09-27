@@ -15,7 +15,7 @@ module.exports.run = (client, message) => {
                 `Alternatively, you can record video evidence of the suspected cheater and submit the video via <#${id.channels['report-hackers']}>`
             ].join(' '))
             .addField('Appeals:', 'KPD do not handle ban appeals. Please email `appeals@yendis.ch` instead.')
-            .addField('Boosters:', 'KPD does not handle boosters. Please email `krunker@yendis.ch` instead')
+            .addField('Boosters:', 'KPD do not handle boosters. Please email `krunker@yendis.ch` instead')
             .setTimestamp()
         ]
     });

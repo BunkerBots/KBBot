@@ -9,7 +9,7 @@ const rules = [
     ['Use appropriate channels and do not advertise.', 'Do not DM people links to anything without consent. Do not advertise anything outside of the appropriate channels. <#705074841488719904> has information about the different channels.'],
     ['Do not attempt to bypass punishments.', 'Do not attempt to bypass the filters in any way, this includes using spoiler tags to fake a banned word. Adding alt accounts to the server is not allowed.'],
     ['Hacks, cheats, and exploits.', 'Showcasing or using hacks, and joining servers that distribute hacks will result in a ban. Do not share any exploits in Krunker and do not joke about hacks.'],
-    ['Use an appropriate nickname and avatar.', 'Your username must be 3 or more english letters and must comply with server rules. NSFW profile pictures are against server rules.'],
+    ['Use an appropriate nickname and avatar.', 'Your username must contain a sequnce of at least 3 consecutive characters typeable on a standard US keyboard (excluding spaces) and must comply with server rules. NSFW profile pictures are against server rules.'],
     ['Do not ask users for personal information.', 'Do not ask people for their real name, age, location, or any other identifying information.'],
     ['Discord Community Guidelines and Terms of Service.', '- https://discordapp.com/guidelines \n- https://discordapp.com/terms'],
 ];
