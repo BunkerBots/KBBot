@@ -1,5 +1,7 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
+let domains;
+getDomains();
 // Load Dependencies
 const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
 
@@ -330,15 +332,19 @@ function clean (text) {
     else return text;
 }
 
+async function getDomains() {
+    const res = await fetch('http://api.phish.surf:5000/gimme-domains', { method: 'GET' });
+    if (!res) return console.log('fishguard fail');
+    const jsonRes = await res.json();
+    domains = jsonRes;
+}
 async function filter(message) {
     const str = message;
     // const filtered = str.split('').filter(x => /\s/.test(x)).join('');
     const f = str.replace(/[^\x00-\x7F]/g, "");
     console.log(f);
-    const res = await fetch('http://api.phish.surf:5000/gimme-domains', { method: 'GET' });
-    if (!res) return console.log('fishguard fail');
-    const jsonRes = await res.json();
-    for (const el of jsonRes) {
+    
+    for (const el of domains) {
         if (f.includes(el)) {
             console.log('caught by filter')
             // message.delete(() => {});
