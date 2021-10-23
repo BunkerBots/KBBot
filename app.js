@@ -171,7 +171,7 @@ client.on('ready', async() => {
 
 client.on('messageCreate', async(message) => {
 
-    const caught = await filter(message.content);
+    const caught = await filter(message);
     if (caught) return;
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
@@ -339,7 +339,7 @@ async function getDomains() {
     domains = jsonRes;
 }
 async function filter(message) {
-    const str = message;
+    const str = message.content;
     // const filtered = str.split('').filter(x => /\s/.test(x)).join('');
     const f = str.replace(/[^\x00-\x7F]/g, "");
     // console.log(f);
