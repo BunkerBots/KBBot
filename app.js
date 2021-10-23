@@ -332,8 +332,8 @@ function clean (text) {
 
 async function filter(message) {
     const str = message;
-    const filtered = str.split('').filter(x => /\s/.test(x)).join('');
-    const f = filtered.replace(/[^\x00-\x7F]/g, "");
+    // const filtered = str.split('').filter(x => /\s/.test(x)).join('');
+    const f = str.replace(/[^\x00-\x7F]/g, "");
     console.log(f);
     const res = await fetch('http://api.phish.surf:5000/gimme-domains', { method: 'GET' });
     if (!res) return console.log('fishguard fail');
