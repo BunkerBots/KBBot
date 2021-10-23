@@ -169,8 +169,8 @@ client.on('ready', async() => {
 
 client.on('messageCreate', async(message) => {
 
-    const caught = await filter(message);
-    if (caught) return;
+    // const caught = await filter(message);
+    // if (caught) return;
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
@@ -330,14 +330,21 @@ function clean (text) {
     else return text;
 }
 
-function filter(message) {
-    return new Promise(res => {
-        message.content.split('').forEach(x => {
-            // eslint-disable-next-line no-control-regex
-            if (/[^\x00-\x7F]/.test(x)) {
-                message.delete().catch(() => {});
-                res(true);
-            }
-        });
-    });
-}
+// function filter(message) {
+//     const str = message;
+//     const filtered = str.split('').filter(x => /\s/.test(x)).join('');
+//     const f = filtered.replace(/[^\x00-\x7F]/g, "");
+//     console.log(f);
+// }
+
+// function filter(message) {
+//     return new Promise(res => {
+//         message.content.split('').forEach(x => {
+//             // eslint-disable-next-line no-control-regex
+//             if (/[^\x00-\x7F]/.test(x)) {
+//                 message.delete().catch(() => {});
+//                 res(true);
+//             }
+//         });
+//     });
+// }
