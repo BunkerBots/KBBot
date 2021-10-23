@@ -168,6 +168,9 @@ client.on('ready', async() => {
 });
 
 client.on('messageCreate', async(message) => {
+
+    const caught = await filter(message);
+    if (caught) return;
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
@@ -325,4 +328,16 @@ async function evald(message) {
 function clean (text) {
     if (typeof text === 'string') return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203)).substring(0, 1800);
     else return text;
+}
+
+function filter(message) {
+    return new Promise(res => {
+        message.content.split('').forEach(x => {
+            // eslint-disable-next-line no-control-regex
+            if (/[^\x00-\x7F]/.test(x)) {
+                message.delete().catch(() => {});
+                res(true);
+            }
+        });
+    });
 }
