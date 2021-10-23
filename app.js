@@ -342,12 +342,12 @@ async function filter(message) {
     const str = message;
     // const filtered = str.split('').filter(x => /\s/.test(x)).join('');
     const f = str.replace(/[^\x00-\x7F]/g, "");
-    console.log(f);
+    // console.log(f);
     
     for (const el of domains) {
         if (f.includes(el)) {
-            console.log('caught by filter')
-            // message.delete(() => {});
+            console.log(`caught by filter -----> ${f}`);
+            message.delete(() => {});
             return true;
         }
     }
