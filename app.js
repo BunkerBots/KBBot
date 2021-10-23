@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+const fetch = require('node-fetch');
 // Load Dependencies
 const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
 
@@ -169,8 +169,8 @@ client.on('ready', async() => {
 
 client.on('messageCreate', async(message) => {
 
-    // const caught = await filter(message);
-    // if (caught) return;
+    const caught = await filter(message);
+    if (caught) return;
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
@@ -330,12 +330,23 @@ function clean (text) {
     else return text;
 }
 
-// function filter(message) {
-//     const str = message;
-//     const filtered = str.split('').filter(x => /\s/.test(x)).join('');
-//     const f = filtered.replace(/[^\x00-\x7F]/g, "");
-//     console.log(f);
-// }
+async function filter(message) {
+    const str = message;
+    const filtered = str.split('').filter(x => /\s/.test(x)).join('');
+    const f = filtered.replace(/[^\x00-\x7F]/g, "");
+    console.log(f);
+    const res = await fetch('http://api.phish.surf:5000/gimme-domains', { method: 'GET' });
+    if (!res) return console.log('fishguard fail');
+    const jsonRes = await res.json();
+    for (const el of jsonRes) {
+        if (f.includes(el)) {
+            console.log('caught by filter')
+            // message.delete(() => {});
+            return true;
+        }
+    }
+    
+}
 
 // function filter(message) {
 //     return new Promise(res => {
