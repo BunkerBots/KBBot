@@ -1,18 +1,21 @@
+/* eslint-disable linebreak-style */
+/* eslint-disable no-control-regex  */
 require('dotenv').config();
 const fetch = require('node-fetch');
+const { MessageEmbed } = require('discord.js')
 let domains;
 getDomains();
 // Load Dependencies
 const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
 
         config =        require('./config.json'),
-        delay = require('delay'),
+        delay =         require('delay'),
         fs =            require('fs'),
         id =            require('./id.json'),
         { inspect } =   require('util'),
         logger =        require('./logger'),
 
-        Discord =   require('discord.js'),
+        Discord =       require('discord.js'),
         client =    new Discord.Client({ 
             fetchAllMembers: false, 
             partials: ['GUILD_MEMBER', 'REACTION', 'USER', 'MESSAGE'], 
@@ -340,13 +343,22 @@ async function getDomains() {
 }
 async function filter(message) {
     const str = message.content;
-    // const filtered = str.split('').filter(x => /\s/.test(x)).join('');
+    const scamlogs = await client.channels.fetch(id.channels["scam-logs"]);
     const f = str.replace(/[^\x00-\x7F]/g, "");
-    // console.log(f);
+    const embed = new MessageEmbed()
+        .setAuthor('Phish Guard')
+        .addField('Author', `${message.author.username}`, true)
+        .addField('\u200b', '\u200b', true)
+        .addField('User ID', `${message.author.id}`);
+        
     
     for (const el of domains) {
         if (f.includes(el)) {
             console.log(`caught by filter -----> ${f}`);
+            embed.setDescription(`\`\`\`${f}\`\`\``);
+            // eslint-disable-next-line no-await-in-loop
+            scamlogs.send({ embeds: [embed] });
+            // eslint-disable-next-line no-empty-function
             message.delete(() => {});
             return true;
         }
