@@ -352,9 +352,13 @@ async function filter(message) {
         .addField('Channel', `<#${message.channel.id}>`, true)
         .addField('User ID', `${message.author.id}`, true);
         
-    ['www.twitch.tv'].forEach(x => {
-        if (f.includes(x)) bypass = true;
-    })
+    const whitelistarr = ['clips.twitch.tv', 'www.twitch.tv']
+    for (listEl of whitelistarr) {
+        if (f.includes(listEl)) {
+                bypass = true;
+                break;
+        }
+    }
     for (const el of domains) {
         if (f.includes(el) && !bypass) {
             console.log(`caught by filter -----> ${f}`);
