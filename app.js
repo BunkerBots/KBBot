@@ -342,6 +342,7 @@ async function getDomains() {
     domains = jsonRes;
 }
 async function filter(message) {
+    let bypass = false;
     const str = message.content;
     const scamlogs = await client.channels.fetch(id.channels["scam-logs"]);
     const f = str.replace(/[^\x00-\x7F]/g, "");
@@ -351,9 +352,11 @@ async function filter(message) {
         .addField('Channel', `<#${message.channel.id}>`, true)
         .addField('User ID', `${message.author.id}`, true);
         
-    
+    ['www.twitch.tv'].forEach(x => {
+        if (f.includes(x)) bypass = true;
+    })
     for (const el of domains) {
-        if (f.includes(el)) {
+        if (f.includes(el) && !bypass) {
             console.log(`caught by filter -----> ${f}`);
             embed.setDescription(`\`\`\`asciidoc\n= Raw =\n\u200b\n${str}\`\`\` \`\`\`asciidoc\n= Filtered =\n\u200b\n${f}\`\`\``);
             // eslint-disable-next-line no-await-in-loop
