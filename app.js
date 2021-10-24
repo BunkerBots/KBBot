@@ -352,7 +352,7 @@ async function filter(message) {
         .addField('Channel', `<#${message.channel.id}>`, true)
         .addField('User ID', `${message.author.id}`, true);
         
-    const whitelistarr = ['clips.twitch.tv', 'www.twitch.tv']
+    const whitelistarr = ['clips.twitch.tv', 'www.twitch.tv', 'discord.gift']
     for (listEl of whitelistarr) {
         if (f.includes(listEl)) {
                 bypass = true;
