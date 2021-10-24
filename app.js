@@ -348,8 +348,8 @@ async function filter(message) {
     const embed = new MessageEmbed()
         .setAuthor('Phish Guard')
         .addField('Author', `${message.author.username}`, true)
-        .addField('\u200b', '\u200b', true)
-        .addField('User ID', `${message.author.id}`);
+        .addField('Channel', `<#${message.channel.id}>`, true)
+        .addField('User ID', `${message.author.id}`, true);
         
     
     for (const el of domains) {
