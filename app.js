@@ -355,7 +355,7 @@ async function filter(message) {
     for (const el of domains) {
         if (f.includes(el)) {
             console.log(`caught by filter -----> ${f}`);
-            embed.setDescription(`\`\`\`Unfiltered \n\u200b\n${str}\n\u200b\nFiltered\n\u200b\n${f}\`\`\``);
+            embed.setDescription(`\`\`\`asciidoc\n= Raw =\n\u200b\n${str}\`\`\` \`\`\`asciidoc\n= Filtered =\n\u200b\n${f}\`\`\``);
             // eslint-disable-next-line no-await-in-loop
             scamlogs.send({ embeds: [embed] });
             // eslint-disable-next-line no-empty-function
