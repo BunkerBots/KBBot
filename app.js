@@ -349,6 +349,7 @@ async function getDomains() {
 }
 async function filter(message) {
     let bypass = false;
+    let isStaff = false;
     const str = message.content;
     const scamlogs = await client.channels.fetch(id.channels["scam-logs"]);
     const f = str.replace(/[^\x00-\x7F]/g, "");
@@ -365,8 +366,15 @@ async function filter(message) {
                 break;
         }
     }
+        
+    for (const role of client.roles.staff) {
+        if (message.member.roles.cache.has(role)) {
+                isStaff = true;
+                break;
+        }
+    }
     for (const el of global.domains) {
-        if (f.includes(el) && !bypass) {
+        if (f.includes(el) && !bypass && !isStaff) {
             console.log(`caught by filter -----> ${f}`);
             embed.setDescription(`\`\`\`asciidoc\n= Raw =\n\u200b\n${str}\`\`\` \`\`\`asciidoc\n= Filtered =\n\u200b\n${f}\`\`\``);
             // eslint-disable-next-line no-await-in-loop
