@@ -273,6 +273,9 @@ client.on('messageCreate', async(message) => {
                         case 'rule':
                             cmdToRun = 'rules';
                             break;
+                        case 'domains':
+                            cmdToRun = 'domains';
+                            break;
                     }
                 }
             }
