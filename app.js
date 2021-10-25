@@ -276,6 +276,9 @@ client.on('messageCreate', async(message) => {
                         case 'domains':
                             cmdToRun = 'domains';
                             break;
+                        case 'check':
+                            cmdToRun = 'check';
+                            break;
                     }
                 }
             }
