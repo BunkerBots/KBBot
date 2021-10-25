@@ -3,7 +3,7 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const { MessageEmbed } = require('discord.js')
-let domains;
+global.domains = [];
 getDomains();
 // Load Dependencies
 const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
@@ -339,7 +339,7 @@ async function getDomains() {
     const res = await fetch('http://api.phish.surf:5000/gimme-domains', { method: 'GET' });
     if (!res) return console.log('fishguard fail');
     const jsonRes = await res.json();
-    domains = jsonRes;
+    global.domains = jsonRes;
 }
 async function filter(message) {
     let bypass = false;
@@ -359,7 +359,7 @@ async function filter(message) {
                 break;
         }
     }
-    for (const el of domains) {
+    for (const el of global.domains) {
         if (f.includes(el) && !bypass) {
             console.log(`caught by filter -----> ${f}`);
             embed.setDescription(`\`\`\`asciidoc\n= Raw =\n\u200b\n${str}\`\`\` \`\`\`asciidoc\n= Filtered =\n\u200b\n${f}\`\`\``);
