@@ -4,7 +4,7 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const { MessageEmbed } = require('discord.js')
 global.domains = [];
-getDomains();
+// getDomains();
 // Load Dependencies
 const   env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
 
