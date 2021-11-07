@@ -175,7 +175,7 @@ client.on('ready', async() => {
 client.on('messageCreate', async(message) => {
 
     // const caught = await filter(message);
-    if (caught) return;
+    //if (caught) return;
     // Crosspost #change-logs
     if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
     if (env !== 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
