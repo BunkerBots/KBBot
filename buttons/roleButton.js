@@ -6,9 +6,9 @@ module.exports = async(client, btn) => {
     const clickerMember = await btn.member.fetch();
     if (clickerMember.roles.cache.has(role.id)) {
         clickerMember.roles.remove(role);
-        return btn.reply({ content: `${role} was removed from you`, ephemeral: true });
+        return btn.reply({ content: `${role} was **removed** from you`, ephemeral: true });
     } else {
         clickerMember.roles.add(role);
-        return btn.reply({ content: `${role} was added to you`, ephemeral: true });
+        return btn.reply({ content: `${role} was **added** to you`, ephemeral: true });
     }
 }
