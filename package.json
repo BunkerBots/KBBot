@@ -14,7 +14,7 @@
         "discord.js": "^13.1.0",
         "dotenv": "^8",
         "mongodb": "^3.5.9",
-        "node-fetch": "^2.6.5",
+        "node-fetch": "^2.6.7",
         "twit": "^2.2.11"
     },
     "repository": {
