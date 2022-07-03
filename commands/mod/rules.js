@@ -2,16 +2,16 @@ const { MessageEmbed } = require("discord.js");
 
 const rules = [
     [,],
-    ['No harassment, impersonation, hate speech, or toxic behaviour.', 'Do not spread toxicity or bully other members. Racism, sexism, homophobia, and harassment will not be tolerated in DMs or in this server.'],
-    ['Do not spam.', 'Posting large copypastas or joining in with chains will be counted as spam. We do not allow epileptic/flashing content. Do not play loud noises and use voice changers in VCs.'],
-    ['NSFW content, and suspicious activities.', 'Do not post NSFW content such as nudity or gore, and do not engage in discussion about sexual or disturbing topics.'],
-    ['Religious and political discussions.', 'Do not spread religious or political ideas no matter their intent. Being insensitive towards others and using religious words, phrases, or references as jokes is not allowed.'],
-    ['Use appropriate channels and do not advertise.', 'Do not DM people links to anything without consent. Do not advertise anything outside of the appropriate channels. <#705074841488719904> has information about the different channels.'],
-    ['Do not attempt to bypass punishments.', 'Do not attempt to bypass the filters in any way, this includes using spoiler tags to fake a banned word. Adding alt accounts to the server is not allowed.'],
-    ['Hacks, cheats, and exploits.', 'Showcasing or using hacks, and joining servers that distribute hacks will result in a ban. Do not share any exploits in Krunker and do not joke about hacks.'],
-    ['Use an appropriate nickname and avatar.', 'Your username must contain a sequnce of at least 3 consecutive characters typeable on a standard US keyboard (excluding spaces) and must comply with server rules. NSFW profile pictures are against server rules.'],
-    ['Do not ask users for personal information.', 'Do not ask people for their real name, age, location, or any other identifying information.'],
-    ['Discord Community Guidelines and Terms of Service.', '- https://discordapp.com/guidelines \n- https://discordapp.com/terms'],
+    ['No toxic behaviour, hate speech, or impersonation', 'Do not spread toxicity or bully other members. Racism, sexism, homophobia, and any other forms of harassment will not be tolerated in DMs or in this server.'],
+    ['Do not spam, post copypastas, or join in chains', 'Posting copypastas or participating in chains will be counted as spam. We do not allow epileptic/flashing content. Do not mic-spam or use voice changers in VCs.'],
+    ['NSFW content & disturbing topics are prohibited', 'Do not post NSFW content such as nudity or gore anywhere in the server. Discussion topics that may be considered sexual or disturbing are prohibited.'],
+    ['Religious and political discussions are prohibited', 'Spreading religious & political ideas is not allowed. We ask users to be respectful towards all others, and insensitive comments towards others will be removed.'],
+    ['Do not ask users for personal information', 'Do not ask other members for their personal information, this includes but is not limited to their real name, age, location, and any other identifying information.'],
+    ['Showcasing or using hacks is prohibited', 'Showcasing or using hacks, and joining servers that distribute hacks will result in a ban. Joking about hacking is prohibited, and avoid sharing any exploits in Krunker.'],
+    ['Use appropriate channels and do not advertise', 'Do not DM people links without consent, and do not advertise anything outside of the appropriate channels. <#705074841488719904> has information about our channels.'],
+    ['Use an appropriate nickname, avatar, and profile', 'Your username must contain at least 3 consecutive characters typeable on a standard US keyboard. Profiles and nicknames must comply with server rules.'],
+    ['Do not attempt to bypass filters & punishments', 'Do not attempt to bypass the filters in any way, this includes using spoiler tags to fake a banned word or phrase. Adding alt accounts to the server is also prohibited.'],
+    ['Follow Discord Guidelines & Terms of Service', '- https://discordapp.com/guidelines \n- https://discordapp.com/terms'],
 ];
 
 module.exports.run = (client, message) => {
@@ -25,9 +25,8 @@ module.exports.run = (client, message) => {
         embeds: [
             new MessageEmbed()
                 .setTitle(`__**Rule ${rNum}**__ - **${rules[rNum][0]}**`)
-                .setColor('BLUE')
+                .setColor('#ffcc00')
                 .setDescription(`${rules[rNum][1]}`)
-                .setTimestamp()
         ],
     });
 
