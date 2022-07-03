@@ -1,5 +1,5 @@
 const { MessageEmbed } = require("discord.js");
-
+// new rules
 const rules = [
     [,],
     ['No toxic behaviour, hate speech, or impersonation', 'Do not spread toxicity or bully other members. Racism, sexism, homophobia, and any other forms of harassment will not be tolerated in DMs or in this server.'],
