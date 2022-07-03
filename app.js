@@ -200,8 +200,11 @@ client.on('messageCreate', async (message) => {
                 if (!canSendInvite) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
             } else if (message.stickers && message.stickers.size != 0) {
                 var canSendSticker = false;
-                // eslint-disable-next-line no-return-assign
-                client.roles.stickers.forEach(role => { if (message.member.roles.cache.has(role)) return canSendSticker = true; });
+                if (message.member.premium) canSendSticker = true;
+                else {
+                    // eslint-disable-next-line no-return-assign
+                    client.roles.stickers.forEach(role => { if (message.member.roles.cache.has(role)) return canSendSticker = true; });
+                }
                 if (!canSendSticker) return logger.messageDeleted(message, 'Sticker', 'BLURPLE');
             }
 
