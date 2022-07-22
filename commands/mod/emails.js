@@ -1,9 +1,12 @@
-const { MessageEmbed } = require("discord.js");
+const {
+    MessageEmbed
+} = require("discord.js");
+
 
 const emails = [
-    ['**• krunker@yendis.ch**', '> For in game monetary transaction issues, KR related scams, and bugs.'],
-    ['**• recovery@yendis.ch**', '> For account recovery if you\'ve lost your password. Proof of account ownership is __**required**__.'],
-    ['**• appeals@yendis.ch**', '> For in game ban appeals.'],
+    ['**• krunker@yendis.ch**', '**-** Transaction issues, KR related scams, and bugs.'],
+    ['**• recovery@yendis.ch**', '**-** Account recovery. Proof of ownership __**required**__.'],
+    ['**• appeals@yendis.ch**', '**-** Ban appeals for tagged & locked accounts.'],
 ];
 
 module.exports.run = (client, message) => {
@@ -16,9 +19,9 @@ module.exports.run = (client, message) => {
             args[1] == 3 ? 1 : 0,
         ],
         embed = new MessageEmbed()
-            .setTitle('**What email should I contact for support?**')
-            .setColor('GREEN')
-            .setTimestamp();
+        .setTitle('**What email should I contact for support?**')
+        .setColor(16763904)
+        .setTimestamp();
 
     for (let i = 0; i < emailsToShow.length; i++) {
         if (emailsToShow[i] == 1) embed.addField(emails[i][0], emails[i][1]);
@@ -26,7 +29,7 @@ module.exports.run = (client, message) => {
 
     message.channel.send({
         content: mention != null ? `<@${mention}>,` : undefined,
-        embeds: [ embed ]
+        embeds: [embed]
     });
 }
 
