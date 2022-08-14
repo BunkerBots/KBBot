@@ -52,14 +52,13 @@ module.exports.run = async(client, message) => {
         
         denyReasons += missingRequirements('clips', message.content);
         
-        const content = message.content.toLowerCase().substring('clip:'.length);
-        if (denyReasons == '' && (!content || videos.every(domain => !message.content.includes(domain)))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
+        if (denyReasons == '' && (videos.every(domain => !message.content.includes(domain)))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
         
         if (denyReasons == '') {
             embed.setTitle('Clips of the week submission request').setDescription(message.content);
         }
         
-        console.log(embed.description, message.content);
+        console.log(embed.description, 'msg', message.content);
         
     } else if (message.content.toUpperCase().includes('CSS')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
