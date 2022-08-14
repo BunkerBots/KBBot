@@ -57,8 +57,7 @@ module.exports.run = async(client, message) => {
         if (denyReasons == '') {
             embed.setTitle('Clips of the week submission request').setDescription(message.content);
         }
-        
-        console.log(embed.description, 'msg', message.content);
+       
         
     } else if (message.content.toUpperCase().includes('CSS')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
@@ -250,8 +249,8 @@ function autoDeny(message, denyReasons) {
 
 async function approvalRequest(client, message, embed, files, bypassLink) {
     if (embed.image) embed = await proxyEmbedImage(client, embed);
-    console.log('bypass ->', bypassLink);
-    if (embed.description.includes('https://') && bypassLink) {
+
+    if (embed.description.includes('https://') && !bypassLink) {
         const [tempEmbed, links] = AttachEmbedImages(embed)
         files.push(...links);
         embed = tempEmbed;
