@@ -18,6 +18,7 @@ const { MessageEmbed, MessageAttachment, TextChannel } = require('discord.js'),
         'community-maps':   ['Map Name:', 'Map Link:', 'Description:'],
         'community-mods':   ['Mod Name:', 'Modifies:'],
         'skin-showcase':    ['Skin Name:'],
+        'clips':            ['Username:', 'Social:', 'Clip:']
     },
     videos = [
         'https://www.youtube.com/watch?v=',
@@ -47,10 +48,17 @@ module.exports.run = async(client, message) => {
             if (message.attachments.size != 0) embed.setImage([...message.attachments.values()][0].url);
         }
     } else if (message.content.toUpperCase().startsWith('CLIP')) {
+        // update - signed off EJ
+        
+        denyReasons += missingRequirements('clips', message.content);
+        
         const content = message.content.substring('Clip:'.length);
-        if (videos.every(domain => !message.content.includes(domain))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
-        else embed.setTitle('Clips of the week submission request')
-            .setURL(content.split(' ')[0]).setDescription(content);
+        if (!content || videos.every(domain => !message.content.includes(domain))) denyReasons = `► **Invalid host.** Video must be hosted on one of these following sites: \n- ${videos.join('\n- ')}`;
+        
+        if (denyReasons == '') {
+            embed.setTitle('Clips of the week submission request').setDescription(message.content);
+        }
+        
     } else if (message.content.toUpperCase().includes('CSS')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
         else if (message.attachments.size > 2) denyReasons = '► **Too many attachments** \n';
