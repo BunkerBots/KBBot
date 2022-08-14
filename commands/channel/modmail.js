@@ -125,7 +125,7 @@ module.exports.run = async(client, message) => {
 
     if (denyReasons == '') {
         const fetchData = await submissions_db.get(message.guild.id);
-        approvalRequest(client, message, embed.setTitle(`${embed.title} #${fetchData.subID}`), files, embed.title.toLowerCase().includes('clip'));
+        approvalRequest(client, message, embed.setTitle(`${embed.title} #${fetchData.subID}`), files, embed.title.toLowerCase().includes('clips'));
         await submissions_db.set(message.guild.id, { subID: fetchData.subID + 1 });
         logger.messageDeleted(message, 'Modmail', 'NAVY');
     } else {
@@ -250,6 +250,7 @@ function autoDeny(message, denyReasons) {
 
 async function approvalRequest(client, message, embed, files, bypassLink) {
     if (embed.image) embed = await proxyEmbedImage(client, embed);
+    console.log('bypass ->', bypassLink);
     if (embed.description.includes('https://') && bypassLink) {
         const [tempEmbed, links] = AttachEmbedImages(embed)
         files.push(...links);
