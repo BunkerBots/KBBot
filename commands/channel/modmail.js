@@ -59,6 +59,8 @@ module.exports.run = async(client, message) => {
             embed.setTitle('Clips of the week submission request').setDescription(message.content);
         }
         
+        console.log(embed.description, message.content);
+        
     } else if (message.content.toUpperCase().includes('CSS')) {
         if (message.attachments.size == 0) denyReasons = '► **Missing attachment** \n';
         else if (message.attachments.size > 2) denyReasons = '► **Too many attachments** \n';
