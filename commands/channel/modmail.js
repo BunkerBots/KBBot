@@ -47,7 +47,7 @@ module.exports.run = async(client, message) => {
                 .setDescription(message.content.substring(message.content.indexOf(' ') + 1));
             if (message.attachments.size != 0) embed.setImage([...message.attachments.values()][0].url);
         }
-    } else if (message.content.toUpperCase().startsWith('CLIP')) {
+    } else if (message.content.toUpperCase().includes('CLIP')) {
         // update - signed off EJ
         
         denyReasons += missingRequirements('clips', message.content);
