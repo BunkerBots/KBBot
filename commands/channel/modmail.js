@@ -312,7 +312,9 @@ async function approveRequest(client, reaction, user, member, embed) {
             sentMsg.react("👎");
             break;
         case 'Clips of the week submission request':
-            sentMsg = await client.channels.resolve(id.channels["clips-of-the-week"]).send(`Clip by: <@${member.id}> \nCheck <#${id.channels['submissions']}> to submit a clip.\n${embed.description}`);
+            let linkidx = embed.description.toLowerCase().indexOf('clip:'), clipLink = embed.description.slice(linkidx), linkContent = embed.description.slice(0, linkidx);
+            post.description = linkContent;
+            sentMsg = await client.channels.resolve(id.channels["clips-of-the-week"]).send({ content: linkContent, embeds: [post] });
             break;
         case 'Clan boards submission request':
             sentMsg = await client.channels.resolve(id.channels["clan-boards"]).send({ content: `${post.description.substring(post.description.indexOf('discord.gg/')).split(' ')[0].split('`')[0]}`, embeds: [post], files: files.length > 0 ? files : undefined });
