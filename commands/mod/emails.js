@@ -9,7 +9,7 @@ const emails = [
     ['**• appeals@yendis.ch**', '**-** Ban appeals for tagged & locked accounts.'],
 ];
 
-module.exports.run = (client, message) => {
+const run = (client, message) => {
     const args = message.content.split(' '),
         full = args[0] == 'emails' ? 1 : 2,
         mention = (args.length > full && args[full].match(/<?@?!?(\d{17,19})>?/)) ? args[full].replace('<@', '').replace('!', '').replace('>', '') : null,
@@ -36,3 +36,6 @@ module.exports.run = (client, message) => {
 module.exports.config = {
     name: 'emails',
 }
+
+// disable according to request from CMs
+// module.exports.run = run;
