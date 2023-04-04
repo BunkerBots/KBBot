@@ -288,6 +288,7 @@ client.on('messageCreate', async (message) => {
                         case 'check':
                             cmdToRun = 'check';
                             break;
+
                     }
                 }
             }
@@ -305,6 +306,19 @@ client.on('messageCreate', async (message) => {
                             break;
                     }
                 }
+            }
+
+            if (message.content.startsWith(`${config.prefix}say`)) {
+                let isAllowed = false;
+                
+                const allowedRoles = [id.roles.cm, '993096841841356880', '920723266195320883'];
+
+
+                allowedRoles.forEach(role => { if (message.member.roles.cache.has(role)) return isAllowed = true; });
+
+
+                if (isAllowed)
+                    cmdToRun = 'say';
             }
 
             // Run Command
