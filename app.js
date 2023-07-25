@@ -28,15 +28,15 @@ const env = !process.argv[2] || process.argv[2] == 'test' ? 'DEV' : 'PROD',
         moderator: new Mongo(process.env.DB_URL, { db: 'userConfigs', coll: 'moderators', init: true }),
     },
 
-    Twit = require('twit'),
-    twit = new Twit({
-        consumer_key: process.env.TWITTER_CONSUMER_KEY,
-        consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-        access_token: process.env.TWITTER_ACCESS_TOKEN,
-        access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-        timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
-        strictSSL: true, // optional - requires SSL certificates to be valid. 
-    }),
+    // Twit = require('twit'),
+    // twit = new Twit({
+    //     consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    //     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    //     access_token: process.env.TWITTER_ACCESS_TOKEN,
+    //     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    //     timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
+    //     strictSSL: true, // optional - requires SSL certificates to be valid. 
+    // }),
 
     staffRoles = [
         id.roles.dev,
@@ -170,12 +170,12 @@ client.on('ready', async () => {
         });
 
         // Twitter
-        const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577'] }),
-            krunkerFeed = await client.channels.fetch(id.channels["krunker-feed"]);
-        twitterStream.on('tweet', (tweet) => {
-            if (tweet.user.screen_name != 'krunkerio' || tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
-            krunkerFeed.send(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`).catch(console.error);
-        });
+        // const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577'] }),
+        //     krunkerFeed = await client.channels.fetch(id.channels["krunker-feed"]);
+        // twitterStream.on('tweet', (tweet) => {
+        //     if (tweet.user.screen_name != 'krunkerio' || tweet.in_reply_to_status_id || tweet.in_reply_to_screen_name) return;
+        //     krunkerFeed.send(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`).catch(console.error);
+        // });
     }
 });
 
@@ -203,7 +203,7 @@ client.on('messageCreate', async (message) => {
                 var canSendSticker = false;
                 // eslint-disable-next-line no-return-assign
                 client.roles.stickers.forEach(role => { if (message.member.roles.cache.has(role)) return canSendSticker = true; });
-           
+
                 if (!canSendSticker) return logger.messageDeleted(message, 'Sticker', 'BLURPLE');
             }
 
@@ -310,7 +310,7 @@ client.on('messageCreate', async (message) => {
 
             if (message.content.startsWith(`${config.prefix}say`)) {
                 let isAllowed = false;
-                
+
                 const allowedRoles = [id.roles.cm, '993096841841356880', '920723266195320883'];
 
 
