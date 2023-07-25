@@ -148,11 +148,11 @@ client.on('ready', async () => {
         });
 
         // Deal with channels on start-up
-        client.channels.resolve(id.channels["looking-for-game"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
-            [...messages.values()].forEach(message => {
-                logger.messageDeleted(message, 'Bot reboot autodel', 'AQUA');
-            });
-        });
+        // client.channels.resolve(id.channels["looking-for-game"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
+        //     [...messages.values()].forEach(message => {
+        //         logger.messageDeleted(message, 'Bot reboot autodel', 'AQUA');
+        //     });
+        // });
         client.channels.resolve(id.channels["report-hackers"]).messages.fetch({ limit: 100 }, false, true).then(messages => {
             [...messages.values()].forEach(message => {
                 if (message.author.id == id.users.kbbot) delay(20000).then(() => message.delete());
@@ -211,9 +211,9 @@ client.on('messageCreate', async (message) => {
 
             // Public Commands
             switch (message.channel.id) {
-                case id.channels["looking-for-game"]:
-                    cmdToRun = 'lfg';
-                    break;
+                // case id.channels["looking-for-game"]:
+                //     cmdToRun = 'lfg';
+                //     break;
                 case id.channels["bunker-bot-commands"] || id.channels["dev"]:
                     switch (message.content.split(' ')[0].substring(config.prefix.length)) {
                         case `info`:
