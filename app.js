@@ -161,13 +161,13 @@ client.on('ready', async () => {
         });
 
         // Unhandled Error Logging
-        const log = await client.channels.fetch(id.channels["log"]);
-        process.on('uncaughtException', (e) => {
-            log.send({ content: '```js\n' + require('util').inspect(e) + '```', disableMentions: 'all' });
-        });
-        process.on('unhandledRejection', (e) => {
-            log.send({ content: '```js\n' + require('util').inspect(e) + '```', disableMentions: 'all' });
-        });
+        // const log = await client.channels.fetch(id.channels["log"]);
+        // process.on('uncaughtException', (e) => {
+        //     log.send({ content: '```js\n' + require('util').inspect(e) + '```', disableMentions: 'all' });
+        // });
+        // process.on('unhandledRejection', (e) => {
+        //     log.send({ content: '```js\n' + require('util').inspect(e) + '```', disableMentions: 'all' });
+        // });
 
         // Twitter
         // const twitterStream = twit.stream('statuses/filter', { follow: ['1125044302055448577'] }),
@@ -181,150 +181,154 @@ client.on('ready', async () => {
 
 client.on('messageCreate', async (message) => {
 
-    // const caught = await filter(message);
-    //if (caught) return;
-    // Crosspost #change-logs
-    if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
-    // temp bypass
-    if (env === 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
+    try {
+        // const caught = await filter(message);
+        //if (caught) return;
+        // Crosspost #change-logs
+        if (env == 'PROD' && message.channel.id == id.channels['change-logs']) await message.crosspost().catch(console.error);
+        // temp bypass
+        if (env === 'PROD' && message.content.startsWith(`${config.prefix}execute`) && (message.author.id == id.users.jytesh || message.author.id == id.users.jj || message.author.id == id.users.ej) && message.channel.id == id.channels['bunker-bot-commands']) evald(message);
 
-    setTimeout(async () => {
-        if (env == 'PROD' && !message.deleted) {
-            if (message.type == 'CHANNEL_PINNED_MESSAGE' && message.author.id == client.user.id) message.delete();
-            if (message.author.bot || !message.guild) return; // Ignore bots and DMs
+        setTimeout(async () => {
+            if (env == 'PROD' && !message.deleted) {
+                if (message.type == 'CHANNEL_PINNED_MESSAGE' && message.author.id == client.user.id) message.delete();
+                if (message.author.bot || !message.guild) return; // Ignore bots and DMs
 
-            // Global Filters
-            if (message.activity != null && inviteBanChannels.includes(message.channel.id)) {
-                var canSendInvite = false;
-                // eslint-disable-next-line no-return-assign
-                client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return canSendInvite = true; });
-                if (!canSendInvite) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
-            } else if (message.stickers && message.stickers.size != 0) {
-                var canSendSticker = false;
-                // eslint-disable-next-line no-return-assign
-                client.roles.stickers.forEach(role => { if (message.member.roles.cache.has(role)) return canSendSticker = true; });
+                // Global Filters
+                if (message.activity != null && inviteBanChannels.includes(message.channel.id)) {
+                    var canSendInvite = false;
+                    // eslint-disable-next-line no-return-assign
+                    client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return canSendInvite = true; });
+                    if (!canSendInvite) return logger.messageDeleted(message, 'Game/Spotify Invite', 'BLURPLE');
+                } else if (message.stickers && message.stickers.size != 0) {
+                    var canSendSticker = false;
+                    // eslint-disable-next-line no-return-assign
+                    client.roles.stickers.forEach(role => { if (message.member.roles.cache.has(role)) return canSendSticker = true; });
 
-                if (!canSendSticker) return logger.messageDeleted(message, 'Sticker', 'BLURPLE');
-            }
+                    if (!canSendSticker) return logger.messageDeleted(message, 'Sticker', 'BLURPLE');
+                }
 
-            var cmdToRun = '';
+                var cmdToRun = '';
 
-            // Public Commands
-            switch (message.channel.id) {
-                // case id.channels["looking-for-game"]:
-                //     cmdToRun = 'lfg';
-                //     break;
-                case id.channels["bunker-bot-commands"] || id.channels["dev"]:
-                    switch (message.content.split(' ')[0].substring(config.prefix.length)) {
-                        case `info`:
-                            cmdToRun = 'info';
-                            break;
-                        case `modlogs`:
-                            cmdToRun = 'modlogs';
-                            break;
-                        case `p`:
-                            cmdToRun = 'player';
-                            break;
-                        case `socials`:
-                            if (message.member.roles.cache.has(id.roles.socials)) cmdToRun = 'socials';
-                            break;
-                    }
-                    break;
-                case id.channels["trading-board"]:
-                    cmdToRun = 'trading';
-                    break;
-                case id.channels["market-chat"]:
-                    switch (message.content.split(' ')[0].substring(config.prefix.length)) {
-                        case `advisors`:
-                            cmdToRun = 'advisors';
-                            break;
-                        case `stonks`:
-                            cmdToRun = 'stonks';
-                            break;
-                    }
-                    break;
-                case id.channels["krunker-art"]:
-                    cmdToRun = 'art';
-                    break;
-                case id.channels["report-hackers"]:
-                    cmdToRun = 'reporthackers';
-                    break;
-                case id.channels["submissions"]:
-                    cmdToRun = 'modmail';
-                    break;
-                case id.channels["random-chat"]:
-                    if (message.content.includes('http')) {
-                        var canBypass = false;
-                        client.roles.link.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
-                        if (!canBypass) logger.messageDeleted(message, 'Member Link', 'BLURPLE');
-                    }
-                    break;
-            }
+                // Public Commands
+                switch (message.channel.id) {
+                    // case id.channels["looking-for-game"]:
+                    //     cmdToRun = 'lfg';
+                    //     break;
+                    case id.channels["bunker-bot-commands"] || id.channels["dev"]:
+                        switch (message.content.split(' ')[0].substring(config.prefix.length)) {
+                            case `info`:
+                                cmdToRun = 'info';
+                                break;
+                            case `modlogs`:
+                                cmdToRun = 'modlogs';
+                                break;
+                            case `p`:
+                                cmdToRun = 'player';
+                                break;
+                            case `socials`:
+                                if (message.member.roles.cache.has(id.roles.socials)) cmdToRun = 'socials';
+                                break;
+                        }
+                        break;
+                    case id.channels["trading-board"]:
+                        cmdToRun = 'trading';
+                        break;
+                    case id.channels["market-chat"]:
+                        switch (message.content.split(' ')[0].substring(config.prefix.length)) {
+                            case `advisors`:
+                                cmdToRun = 'advisors';
+                                break;
+                            case `stonks`:
+                                cmdToRun = 'stonks';
+                                break;
+                        }
+                        break;
+                    case id.channels["krunker-art"]:
+                        cmdToRun = 'art';
+                        break;
+                    case id.channels["report-hackers"]:
+                        cmdToRun = 'reporthackers';
+                        break;
+                    case id.channels["submissions"]:
+                        cmdToRun = 'modmail';
+                        break;
+                    case id.channels["random-chat"]:
+                        if (message.content.includes('http')) {
+                            var canBypass = false;
+                            client.roles.link.forEach(role => { if (message.member.roles.cache.has(role)) canBypass = true; return });
+                            if (!canBypass) logger.messageDeleted(message, 'Member Link', 'BLURPLE');
+                        }
+                        break;
+                }
 
-            // Staff Commands
-            if (message.content.startsWith(`${config.prefix}staff`)) {
-                let isStaff = false;
-                // eslint-disable-next-line no-return-assign
-                client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
-                if (isStaff) {
-                    message.content = message.content.substring(message.content.indexOf(' ') + 1);
-                    switch (message.content.split(' ')[0]) {
-                        case 'email':
-                        case 'emails':
-                            cmdToRun = 'emails';
-                            break;
-                        case 'kpd':
-                            cmdToRun = 'kpd';
-                            break;
-                        case 'roles':
-                            cmdToRun = 'roles';
-                            break;
-                        case 'rule':
-                            cmdToRun = 'rules';
-                            break;
-                        case 'domains':
-                            cmdToRun = 'domains';
-                            break;
-                        case 'check':
-                            cmdToRun = 'check';
-                            break;
+                // Staff Commands
+                if (message.content.startsWith(`${config.prefix}staff`)) {
+                    let isStaff = false;
+                    // eslint-disable-next-line no-return-assign
+                    client.roles.staff.forEach(role => { if (message.member.roles.cache.has(role)) return isStaff = true; });
+                    if (isStaff) {
+                        message.content = message.content.substring(message.content.indexOf(' ') + 1);
+                        switch (message.content.split(' ')[0]) {
+                            case 'email':
+                            case 'emails':
+                                cmdToRun = 'emails';
+                                break;
+                            case 'kpd':
+                                cmdToRun = 'kpd';
+                                break;
+                            case 'roles':
+                                cmdToRun = 'roles';
+                                break;
+                            case 'rule':
+                                cmdToRun = 'rules';
+                                break;
+                            case 'domains':
+                                cmdToRun = 'domains';
+                                break;
+                            case 'check':
+                                cmdToRun = 'check';
+                                break;
 
+                        }
                     }
                 }
-            }
 
-            // Market Commands
-            if (message.content.startsWith(`${config.prefix}mkt`)) {
-                let isMkt = false;
-                // eslint-disable-next-line no-return-assign
-                client.roles.mkt.forEach(role => { if (message.member.roles.cache.has(role)) return isMkt = true; });
-                if (isMkt) {
-                    message.content = message.content.substring(message.content.indexOf(' ') + 1);
-                    switch (message.content.split(' ')[0]) {
-                        case 'rule':
-                            cmdToRun = 'mktRules';
-                            break;
+                // Market Commands
+                if (message.content.startsWith(`${config.prefix}mkt`)) {
+                    let isMkt = false;
+                    // eslint-disable-next-line no-return-assign
+                    client.roles.mkt.forEach(role => { if (message.member.roles.cache.has(role)) return isMkt = true; });
+                    if (isMkt) {
+                        message.content = message.content.substring(message.content.indexOf(' ') + 1);
+                        switch (message.content.split(' ')[0]) {
+                            case 'rule':
+                                cmdToRun = 'mktRules';
+                                break;
+                        }
                     }
                 }
+
+                if (message.content.startsWith(`${config.prefix}say`)) {
+                    let isAllowed = false;
+
+                    const allowedRoles = [id.roles.cm, '993096841841356880', '920723266195320883'];
+
+
+                    allowedRoles.forEach(role => { if (message.member.roles.cache.has(role)) return isAllowed = true; });
+
+
+                    if (isAllowed)
+                        cmdToRun = 'say';
+                }
+
+                // Run Command
+                if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
             }
-
-            if (message.content.startsWith(`${config.prefix}say`)) {
-                let isAllowed = false;
-
-                const allowedRoles = [id.roles.cm, '993096841841356880', '920723266195320883'];
-
-
-                allowedRoles.forEach(role => { if (message.member.roles.cache.has(role)) return isAllowed = true; });
-
-
-                if (isAllowed)
-                    cmdToRun = 'say';
-            }
-
-            // Run Command
-            if (cmdToRun != '') client.commands.get(`${cmdToRun}`).run(client, message);
-        }
-    }, 250);
+        }, 250);
+    } catch (err) {
+        console.log(err)
+    }
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
